@@ -1,0 +1,348 @@
+import React, { useState } from 'react';
+import { Campaign, Prize } from '../types';
+import { LuckyWheel } from './Games/LuckyWheel';
+import { ScratchCard } from './Games/ScratchCard';
+import { SlotMachine } from './Games/SlotMachine';
+import { QuizGame } from './Games/QuizGame';
+import { MysteryBox } from './Games/MysteryBox';
+import { addLead, getStoredSettings } from '../utils/storage';
+import { createWooCommerceCoupon } from '../utils/woocommerce';
+import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag } from 'lucide-react';
+
+interface CustomerGamePageProps {
+  campaign: Campaign;
+  onGoToAdmin?: () => void;
+}
+
+export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, onGoToAdmin }) => {
+  const [instagramHandle, setInstagramHandle] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [step, setStep] = useState<'INPUT' | 'PLAY' | 'RESULT'>('INPUT');
+  const [wonPrize, setWonPrize] = useState<Prize | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [inputError, setInputError] = useState('');
+  const [wooStatusMessage, setWooStatusMessage] = useState<string | null>(null);
+
+  const handleStartGame = (e: React.FormEvent) => {
+    e.preventDefault();
+    setInputError('');
+
+    if (campaign.requireInstagramFollow && !instagramHandle.trim()) {
+      setInputError('لطفا آیدی اینستاگرام خود را وارد کنید.');
+      return;
+    }
+
+    if (campaign.requirePhoneNumber) {
+      if (!phoneNumber.trim() || phoneNumber.length < 10) {
+        setInputError('لطفا شماره همراه معتبر (مثلا 09123456789) وارد کنید.');
+        return;
+      }
+    }
+
+    setStep('PLAY');
+  };
+
+  const handleGameFinish = async (prize: Prize) => {
+    setWonPrize(prize);
+
+    // Save lead data
+    addLead({
+      campaignId: campaign.id,
+      campaignTitle: campaign.title,
+      instagramHandle: instagramHandle.startsWith('@') ? instagramHandle : `@${instagramHandle}`,
+      phoneNumber: phoneNumber || 'ثبت نشده',
+      prizeWon: prize.label,
+      couponCode: prize.couponCode,
+      gameType: campaign.gameType,
+    });
+
+    // Auto sync coupon code to WooCommerce if enabled
+    if (prize.couponCode) {
+      const settings = getStoredSettings();
+      if (settings.enableWooCommerce) {
+        setWooStatusMessage('در حال ثبت کد تخفیف در فروشگاه ووکامرس...');
+        const wooRes = await createWooCommerceCoupon(settings, {
+          code: prize.couponCode,
+          amount: prize.discountPercent || 10,
+          discountType: 'percent',
+          description: `کد تخفیف کمپین ${campaign.title} برای کاربر ${instagramHandle || phoneNumber}`,
+        });
+        if (wooRes.success) {
+          setWooStatusMessage('✅ کد تخفیف با موفقیت روی سایت فروشگاه شما فعال شد!');
+        } else {
+          setWooStatusMessage(`⚠️ کد تخفیف آمادست (پیام ووکامرس: ${wooRes.message})`);
+        }
+      }
+    }
+
+    setTimeout(() => {
+      setStep('RESULT');
+    }, 1200);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between items-center p-4 sm:p-6 dir-rtl font-['Vazirmatn',sans-serif]">
+      
+      {/* Top Store Header */}
+      <header className="w-full max-w-md pt-2 pb-4 flex items-center justify-between border-b border-slate-800/80">
+        <div className="flex items-center gap-3">
+          {campaign.storeLogoUrl ? (
+            <img src={campaign.storeLogoUrl} alt={campaign.storeName} className="w-12 h-12 rounded-full border-2 border-amber-400 object-cover shadow-lg" />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center font-black text-lg text-white shadow-lg">
+              {campaign.storeName.charAt(0)}
+            </div>
+          )}
+          <div>
+            <h1 className="text-base font-black text-white leading-tight">{campaign.storeName}</h1>
+            <a
+              href={`https://instagram.com/${campaign.storeInstagram}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-amber-300 hover:underline flex items-center gap-1 mt-0.5"
+            >
+              <Instagram className="w-3.5 h-3.5 text-pink-400" />
+              <span>@{campaign.storeInstagram}</span>
+            </a>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 text-[11px] px-2.5 py-1 rounded-full border border-amber-500/30 font-semibold">
+            <Sparkles className="w-3 h-3 text-amber-400" /> مسابقه و هدیه
+          </span>
+        </div>
+      </header>
+
+      {/* Main Game Container */}
+      <main className="w-full max-w-md my-auto py-6">
+        <div className="bg-slate-900 border border-slate-800/90 rounded-3xl p-5 sm:p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+          
+          {/* Subtle Ambient Glow */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* STEP 1: INPUT FORM */}
+          {step === 'INPUT' && (
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-wider bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 inline-block">
+                  گردونه شانس و جوایز ویژه
+                </span>
+                <h2 className="text-xl font-black text-white leading-snug">
+                  {campaign.customHeadline || campaign.title}
+                </h2>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {campaign.customSubheadline || 'اطلاعات خود را وارد کنید تا شانس برنده شدن کد تخفیف ویژه فروشگاه ما را داشته باشید!'}
+                </p>
+              </div>
+
+              {inputError && (
+                <div className="bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs p-3 rounded-2xl text-center animate-shake">
+                  {inputError}
+                </div>
+              )}
+
+              <form onSubmit={handleStartGame} className="space-y-4">
+                {campaign.requireInstagramFollow && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">آیدی اینستاگرام شما</label>
+                    <div className="relative">
+                      <Instagram className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
+                      <input
+                        type="text"
+                        placeholder="my_instagram_id@"
+                        value={instagramHandle}
+                        onChange={(e) => setInstagramHandle(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl pr-10 pl-4 py-3 text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {campaign.requirePhoneNumber && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">شماره همراه (جهت ثبت کد تخفیف)</label>
+                    <div className="relative">
+                      <Phone className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
+                      <input
+                        type="tel"
+                        placeholder="09123456789"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl pr-10 pl-4 py-3 text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {campaign.requireInstagramFollow && (
+                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3">
+                    <div className="text-[11px] text-slate-300">
+                      <span>پیج <strong className="text-amber-300">@{campaign.storeInstagram}</strong> را فالو کرده‌اید؟</span>
+                    </div>
+                    <a
+                      href={`https://instagram.com/${campaign.storeInstagram}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-xl text-[11px] shrink-0 flex items-center gap-1 shadow-md transition-all"
+                    >
+                      <Instagram className="w-3 h-3" /> فالو پیج
+                    </a>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-2xl shadow-xl shadow-amber-500/20 text-sm flex items-center justify-center gap-2 cursor-pointer transition-all transform active:scale-95"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>شروع بازی و دریافت شانس</span>
+                </button>
+              </form>
+
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 text-center pt-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>اطلاعات شما نزد {campaign.storeName} کاملا محفوظ است</span>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: GAME INTERACTION */}
+          {step === 'PLAY' && (
+            <div className="space-y-4 text-center">
+              <div className="mb-2">
+                <span className="text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 inline-block">
+                  شانس خود را امتحان کنید!
+                </span>
+                <h3 className="text-base font-bold text-white mt-2">
+                  {campaign.title}
+                </h3>
+              </div>
+
+              {campaign.gameType === 'WHEEL' && (
+                <LuckyWheel prizes={campaign.prizes} onFinish={handleGameFinish} />
+              )}
+              {campaign.gameType === 'SCRATCH' && (
+                <ScratchCard prizes={campaign.prizes} onFinish={handleGameFinish} />
+              )}
+              {campaign.gameType === 'SLOT' && (
+                <SlotMachine prizes={campaign.prizes} onFinish={handleGameFinish} />
+              )}
+              {campaign.gameType === 'QUIZ' && (
+                <QuizGame prizes={campaign.prizes} onFinish={handleGameFinish} />
+              )}
+              {campaign.gameType === 'MYSTERY_BOX' && (
+                <MysteryBox prizes={campaign.prizes} onFinish={handleGameFinish} />
+              )}
+            </div>
+          )}
+
+          {/* STEP 3: RESULT SCREEN */}
+          {step === 'RESULT' && wonPrize && (
+            <div className="space-y-5 text-center animate-scale-up">
+              <div className="w-16 h-16 bg-amber-500/20 border-2 border-amber-400 rounded-full flex items-center justify-center mx-auto text-amber-300 shadow-xl shadow-amber-500/10">
+                <Gift className="w-8 h-8 animate-bounce" />
+              </div>
+
+              <div>
+                <span className="text-xs font-black text-amber-400 uppercase tracking-widest bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+                  تبریک! شما برنده شدید 🎉
+                </span>
+                <h3 className="text-2xl font-black text-white mt-3 leading-tight">
+                  {wonPrize.label}
+                </h3>
+                <p className="text-xs text-slate-300 mt-1">
+                  کد تخفیف اختصاصی شما آماده استفاده در خرید بعدی است:
+                </p>
+              </div>
+
+              {wonPrize.couponCode ? (
+                <div className="bg-slate-950 p-4 rounded-2xl border border-amber-500/40 space-y-3">
+                  <span className="text-[10px] text-slate-400 block">کد تخفیف شما:</span>
+                  <div className="flex items-center justify-between bg-slate-900 px-4 py-3 rounded-xl border border-slate-800 font-mono text-base font-bold text-amber-300 dir-ltr">
+                    <span>{wonPrize.couponCode}</span>
+                    <button
+                      onClick={() => copyToClipboard(wonPrize.couponCode)}
+                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      {copiedCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedCode ? 'کپی شد' : 'کپی'}</span>
+                    </button>
+                  </div>
+
+                  {wooStatusMessage && (
+                    <div className="pt-1 text-[11px] text-purple-300 bg-purple-950/60 border border-purple-500/30 p-2 rounded-xl flex items-center justify-center gap-1.5 dir-rtl">
+                      <ShoppingBag className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                      <span>{wooStatusMessage}</span>
+                    </div>
+                  )}
+
+                  {/* Fallback & Support Info */}
+                  <div className="pt-2 text-[11px] text-slate-300 bg-slate-900/90 border border-slate-800 p-3 rounded-xl text-right leading-relaxed space-y-1.5">
+                    <p className="font-bold text-amber-300 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>این کد و آیدی شما در دیتابیس سیستم ثبت شد.</span>
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      در صورت بروز هرگونه مشکل یا عدم کارکرد کد در سایت، کافیست کد یا آیدی خود را به دایرکت پیج پیام دهید تا ادمین استعلام بگیرد.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs text-slate-300">
+                  جهت دریافت هدیه خود، به دایرکت پیج <strong className="text-amber-300">@{campaign.storeInstagram}</strong> پیام دهید.
+                </div>
+              )}
+
+              <div className="pt-2 space-y-2">
+                {campaign.storeWebsiteUrl && (
+                  <a
+                    href={campaign.storeWebsiteUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
+                  >
+                    <span>استفاده از کد تخفیف در سایت فروشگاه</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+
+                <a
+                  href={`https://instagram.com/${campaign.storeInstagram}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
+                >
+                  <Instagram className="w-4 h-4 text-pink-400" />
+                  <span>پیام به دایرکت ادمین در اینستاگرام</span>
+                </a>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full max-w-md py-3 text-center text-[11px] text-slate-500 border-t border-slate-800/60 flex items-center justify-between">
+        <span>پلتفرم متین بازی</span>
+        {onGoToAdmin && (
+          <button
+            onClick={onGoToAdmin}
+            className="text-slate-400 hover:text-slate-200 text-[10px] underline cursor-pointer"
+          >
+            ورود به مدیریت
+          </button>
+        )}
+      </footer>
+
+    </div>
+  );
+};

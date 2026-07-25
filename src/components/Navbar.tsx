@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { StoreSettings } from '../types';
-import { Sparkles, Globe, LayoutDashboard, Gift, Settings, Instagram, Store, ArrowUpRight } from 'lucide-react';
+import { Sparkles, Globe, LayoutDashboard, Gift, Settings, Instagram, Store, ArrowUpRight, Lock } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'CAMPAIGNS' | 'ANALYTICS' | 'SETTINGS';
   setActiveTab: (tab: 'CAMPAIGNS' | 'ANALYTICS' | 'SETTINGS') => void;
   storeSettings: StoreSettings;
   onOpenNetlifyModal: () => void;
+  onLockPanel?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   storeSettings,
-  onOpenNetlifyModal
+  onOpenNetlifyModal,
+  onLockPanel
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 dir-rtl">
@@ -83,17 +85,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Settings className="w-4 h-4" />
             <span>تنظیمات</span>
           </button>
-        </nav>
 
-        {/* Netlify Deploy Guide Button */}
-        <button
-          onClick={onOpenNetlifyModal}
-          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-lg"
-        >
-          <Globe className="w-4 h-4 text-emerald-400" />
-          <span>انتشار روی Netlify</span>
-          <ArrowUpRight className="w-3.5 h-3.5" />
-        </button>
+          {onLockPanel && (
+            <button
+              onClick={onLockPanel}
+              title="قفل کردن پنل ادمین"
+              className="px-2.5 py-2 rounded-xl text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-400/10 border border-amber-400/20 transition-all flex items-center gap-1 cursor-pointer mr-1"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">قفل پنل</span>
+            </button>
+          )}
+        </nav>
 
       </div>
     </header>

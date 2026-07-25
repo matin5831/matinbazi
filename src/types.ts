@@ -67,4 +67,9 @@ export interface StoreSettings {
   logoUrl: string;
   primaryColor: string;
   phonePrefix: string;
+  // WooCommerce REST API Integration
+  enableWooCommerce?: boolean;
+  wooCommerceUrl?: string;
+  wooCommerceConsumerKey?: string;
+  wooCommerceConsumerSecret?: string;
 }

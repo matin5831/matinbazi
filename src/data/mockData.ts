@@ -7,6 +7,10 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
   logoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
   primaryColor: '#6366f1',
   phonePrefix: '09',
+  enableWooCommerce: false,
+  wooCommerceUrl: '',
+  wooCommerceConsumerKey: '',
+  wooCommerceConsumerSecret: '',
 };
 
 export const INITIAL_CAMPAIGNS: Campaign[] = [

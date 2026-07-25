@@ -12,8 +12,9 @@ import { CampaignsList } from './components/CampaignsList';
 import { CampaignBuilder } from './components/CampaignBuilder';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { StoreSettingsView } from './components/StoreSettingsView';
-import { PublicPlayerModal } from './components/PublicPlayerModal';
-import { NetlifyDeployModal } from './components/NetlifyDeployModal';
+import { CustomerGamePage } from './components/CustomerGamePage';
+import { RenderDeployModal } from './components/RenderDeployModal';
+import { AdminAuthModal } from './components/AdminAuthModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'CAMPAIGNS' | 'ANALYTICS' | 'SETTINGS'>('CAMPAIGNS');
@@ -29,10 +30,11 @@ export default function App() {
   });
 
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null | 'NEW'>(null);
-  const [activeDemoCampaign, setActiveDemoCampaign] = useState<Campaign | null>(null);
+  const [customerCampaign, setCustomerCampaign] = useState<Campaign | null>(null);
   const [showNetlifyModal, setShowNetlifyModal] = useState(false);
+  const [isAdminAuthed, setIsAdminAuthed] = useState(false);
 
-  // Load Initial Storage Data
+  // Load Initial Storage Data & Check URL Parameters
   useEffect(() => {
     const loadedCampaigns = getStoredCampaigns();
     const loadedLeads = getStoredLeads();
@@ -42,13 +44,17 @@ export default function App() {
     setLeads(loadedLeads);
     setStoreSettings(loadedSettings);
 
-    // Direct campaign URL query check
+    // Direct campaign URL query check (e.g. ?campaign=cmp-wheel-01 or ?play=cmp-wheel-01)
     const params = new URLSearchParams(window.location.search);
-    const campParam = params.get('campaign');
+    const campParam = params.get('campaign') || params.get('play') || params.get('c');
+    
     if (campParam) {
       const targetCamp = loadedCampaigns.find(c => c.id === campParam);
       if (targetCamp) {
-        setActiveDemoCampaign(targetCamp);
+        setCustomerCampaign(targetCamp);
+      } else if (loadedCampaigns.length > 0) {
+        // Fallback to first campaign if requested ID not found
+        setCustomerCampaign(loadedCampaigns[0]);
       }
     }
   }, []);
@@ -93,15 +99,37 @@ export default function App() {
     setStoreSettings(getStoredSettings());
   };
 
+  // If a customer opened a story link (or admin requested live preview), render ONLY CustomerGamePage
+  if (customerCampaign) {
+    return (
+      <CustomerGamePage
+        campaign={customerCampaign}
+        onGoToAdmin={() => {
+          // Clear query params from browser URL and exit customer view
+          window.history.pushState({}, '', window.location.pathname);
+          setCustomerCampaign(null);
+          setLeads(getStoredLeads());
+          setCampaigns(getStoredCampaigns());
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-['Vazirmatn',sans-serif] selection:bg-amber-500 selection:text-slate-950">
       
+      {/* Admin Authentication Lock Screen */}
+      {!isAdminAuthed && (
+        <AdminAuthModal onSuccess={() => setIsAdminAuthed(true)} />
+      )}
+
       {/* Header Bar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         storeSettings={storeSettings}
         onOpenNetlifyModal={() => setShowNetlifyModal(true)}
+        onLockPanel={() => setIsAdminAuthed(false)}
       />
 
       {/* Main Container View */}
@@ -119,7 +147,7 @@ export default function App() {
                 campaigns={campaigns}
                 onCreateNew={() => setEditingCampaign('NEW')}
                 onEdit={(camp) => setEditingCampaign(camp)}
-                onPlayDemo={(camp) => setActiveDemoCampaign(camp)}
+                onPlayDemo={(camp) => setCustomerCampaign(camp)}
                 onToggleActive={handleToggleActiveCampaign}
                 onDelete={handleDeleteCampaign}
               />
@@ -144,29 +172,17 @@ export default function App() {
         )}
       </main>
 
-      {/* Live Customer Game Player Modal */}
-      {activeDemoCampaign && (
-        <PublicPlayerModal
-          campaign={activeDemoCampaign}
-          onClose={() => {
-            setActiveDemoCampaign(null);
-            // Refresh leads & stats
-            setLeads(getStoredLeads());
-            setCampaigns(getStoredCampaigns());
-          }}
-        />
-      )}
-
-      {/* Netlify Deploy Guide Modal */}
+      {/* Render Deploy Guide Modal */}
       {showNetlifyModal && (
-        <NetlifyDeployModal onClose={() => setShowNetlifyModal(false)} />
+        <RenderDeployModal onClose={() => setShowNetlifyModal(false)} />
       )}
 
       {/* Footer */}
       <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500 dir-rtl">
-        <span>پلتفرم بازاریابی و گیمیفیکیشن متین بازی (Matin Bazi) مخصوص فروشگاه‌های آنلاین | آماده اجرا روی Netlify</span>
+        <span>پلتفرم بازاریابی و گیمیفیکیشن متین بازی (Matin Bazi) مخصوص فروشگاه‌های آنلاین | آماده اجرا روی Render.com</span>
       </footer>
 
     </div>
   );
 }
+

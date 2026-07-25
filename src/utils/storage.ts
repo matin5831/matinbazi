@@ -4,6 +4,29 @@ import { INITIAL_CAMPAIGNS, INITIAL_LEADS, INITIAL_STORE_SETTINGS } from '../dat
 const CAMPAIGNS_KEY = 'boostagram_campaigns_v1';
 const LEADS_KEY = 'boostagram_leads_v1';
 const SETTINGS_KEY = 'boostagram_settings_v1';
+const ADMIN_PASS_KEY = 'matinbazi_admin_pass_v1';
+
+export function getAdminPassword(): string | null {
+  try {
+    return localStorage.getItem(ADMIN_PASS_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+export function setAdminPassword(password: string): void {
+  try {
+    localStorage.setItem(ADMIN_PASS_KEY, password);
+  } catch (e) {
+    console.error('Failed to save admin password', e);
+  }
+}
+
+export function verifyAdminPassword(password: string): boolean {
+  const saved = getAdminPassword();
+  if (!saved) return false;
+  return saved === password;
+}
 
 export function getStoredCampaigns(): Campaign[] {
   try {

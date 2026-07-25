@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PlayerLead, Campaign } from '../types';
 import { toggleRedeemStatus } from '../utils/storage';
-import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles, ShieldCheck, XCircle, SearchCode } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
   leads: PlayerLead[];
@@ -11,8 +11,19 @@ interface AnalyticsDashboardProps {
 
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, campaigns, onLeadsUpdated }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [inquiryQuery, setInquiryQuery] = useState('');
   const [filterCampaign, setFilterCampaign] = useState<string>('ALL');
   const [copiedPhones, setCopiedPhones] = useState(false);
+
+  // Inquiry lookup match
+  const inquiryMatch = inquiryQuery.trim()
+    ? leads.find(
+        l =>
+          l.couponCode.toLowerCase() === inquiryQuery.trim().toLowerCase() ||
+          l.instagramHandle.toLowerCase().replace('@', '') === inquiryQuery.trim().toLowerCase().replace('@', '') ||
+          l.phoneNumber.includes(inquiryQuery.trim())
+      )
+    : null;
 
   const filteredLeads = leads.filter(lead => {
     const matchesSearch =
@@ -109,6 +120,104 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
           </div>
         </div>
 
+      </div>
+
+      {/* Instant Coupon & Lead Lookup Box */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/80 border border-amber-500/30 p-5 rounded-3xl shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-300 flex items-center justify-center shrink-0">
+              <SearchCode className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">استعلام فوری کد تخفیف یا آیدی مشتری</h3>
+              <p className="text-[11px] text-slate-400">کد تخفیف ارسالی توسط مشتری را اینجا وارد کنید تا صحت آن تایید شود</p>
+            </div>
+          </div>
+          <span className="text-[10px] bg-amber-500/10 text-amber-300 px-2.5 py-1 rounded-full border border-amber-500/30 font-semibold shrink-0">
+            سیستم استعلام ادمین
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-amber-400 absolute right-3.5 top-3.5" />
+            <input
+              type="text"
+              placeholder="مثلا: WHEEL50 یا آیدی اینستاگرام مشتری..."
+              value={inquiryQuery}
+              onChange={(e) => setInquiryQuery(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-2xl pr-10 pl-4 py-3 text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none transition-colors"
+            />
+            {inquiryQuery && (
+              <button
+                onClick={() => setInquiryQuery('')}
+                className="absolute left-3 top-3 text-slate-500 hover:text-white text-xs cursor-pointer"
+              >
+                حذف
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Inquiry Result Display */}
+        {inquiryQuery.trim() && (
+          <div className="animate-fade-in pt-1">
+            {inquiryMatch ? (
+              <div className="bg-emerald-950/80 border border-emerald-500/50 p-4 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between border-b border-emerald-500/30 pb-2">
+                  <div className="flex items-center gap-2 text-emerald-300 text-xs font-black">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    <span>کد تخفیف معتبر است و در سیستم ثبت شده!</span>
+                  </div>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                    {inquiryMatch.isRedeemed ? 'قبلاً استفاده شده' : 'آماده استفاده'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">آیدی اینستاگرام:</span>
+                    <strong className="text-white dir-ltr inline-block">{inquiryMatch.instagramHandle}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">جایزه برنده شده:</span>
+                    <strong className="text-amber-300">{inquiryMatch.prizeWon}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">کد تخفیف:</span>
+                    <strong className="text-emerald-300 font-mono text-sm">{inquiryMatch.couponCode}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">تاریخ برنده شدن:</span>
+                    <span className="text-slate-300">{inquiryMatch.wonAt}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    onClick={() => handleToggleStatus(inquiryMatch.id)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      inquiryMatch.isRedeemed
+                        ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg'
+                    }`}
+                  >
+                    {inquiryMatch.isRedeemed ? 'تغییر وضعیت به معلق' : 'تایید و علامت‌گذاری به عنوان استفاده شده'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-rose-950/80 border border-rose-500/50 p-4 rounded-2xl flex items-center gap-3 text-xs text-rose-300">
+                <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                <div>
+                  <strong className="block font-bold">این کد یا آیدی پیدا نشد!</strong>
+                  <span className="text-[11px] text-rose-200">کدی با این مشخصات در لیست برندگان ثبت نشده است. لطفاً آیدی یا کد را مجدداً بررسی کنید.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Toolbar & Filter Options */}
