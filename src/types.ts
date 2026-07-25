@@ -1,0 +1,70 @@
+export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'QUIZ' | 'MYSTERY_BOX';
+
+export interface Prize {
+  id: string;
+  label: string;
+  subLabel?: string;
+  probability: number; // 0 - 100 %
+  couponCode: string;
+  discountPercent?: number;
+  color: string;
+  isWin: boolean;
+  remainingQuantity?: number;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+}
+
+export interface Campaign {
+  id: string;
+  title: string;
+  description: string;
+  storeName: string;
+  storeInstagram: string;
+  storeLogoUrl?: string;
+  gameType: GameType;
+  themeColor: string;
+  accentColor: string;
+  bgGradient: string;
+  prizes: Prize[];
+  quizQuestions?: QuizQuestion[];
+  requireInstagramFollow: boolean;
+  requirePhoneNumber: boolean;
+  requireStoryMention: boolean;
+  maxSpinsPerUser: number;
+  expiryDays: number;
+  isActive: boolean;
+  createdAt: string;
+  totalPlays: number;
+  totalWinners: number;
+  customHeadline?: string;
+  customSubheadline?: string;
+  customTerms?: string;
+  bannerText?: string;
+}
+
+export interface PlayerLead {
+  id: string;
+  campaignId: string;
+  campaignTitle: string;
+  instagramHandle: string;
+  phoneNumber: string;
+  prizeWon: string;
+  couponCode: string;
+  wonAt: string;
+  isRedeemed: boolean;
+  gameType: GameType;
+}
+
+export interface StoreSettings {
+  storeName: string;
+  instagramUsername: string;
+  websiteUrl: string;
+  logoUrl: string;
+  primaryColor: string;
+  phonePrefix: string;
+}

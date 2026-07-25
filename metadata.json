@@ -1,0 +1,6 @@
+{
+  "name": "Matin Bazi Store Gamification",
+  "description": "پلتفرم متین بازی - گیمیفیکیشن و بازاریابی تعاملی اینستاگرام و فروشگاه آنلاین - گردونه شانس، مسابقات و کدهای تخفیف",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
