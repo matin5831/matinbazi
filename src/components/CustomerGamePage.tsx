@@ -15,6 +15,12 @@ interface CustomerGamePageProps {
 }
 
 export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, onGoToAdmin }) => {
+  const storeSettings = getStoredSettings();
+  const storeName = campaign.storeName || storeSettings.storeName || 'فروشگاه آنلاین';
+  const storeInstagram = (campaign.storeInstagram || storeSettings.instagramUsername || '').replace('@', '');
+  const storeLogoUrl = campaign.storeLogoUrl || storeSettings.logoUrl || '';
+  const storeWebsiteUrl = campaign.storeWebsiteUrl || storeSettings.websiteUrl || '';
+
   const [instagramHandle, setInstagramHandle] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [step, setStep] = useState<'INPUT' | 'PLAY' | 'RESULT'>('INPUT');
@@ -92,24 +98,26 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
       {/* Top Store Header */}
       <header className="w-full max-w-md pt-2 pb-4 flex items-center justify-between border-b border-slate-800/80">
         <div className="flex items-center gap-3">
-          {campaign.storeLogoUrl ? (
-            <img src={campaign.storeLogoUrl} alt={campaign.storeName} className="w-12 h-12 rounded-full border-2 border-amber-400 object-cover shadow-lg" />
+          {storeLogoUrl ? (
+            <img src={storeLogoUrl} alt={storeName} className="w-12 h-12 rounded-full border-2 border-amber-400 object-cover shadow-lg" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center font-black text-lg text-white shadow-lg">
-              {campaign.storeName.charAt(0)}
+              {storeName.charAt(0)}
             </div>
           )}
           <div>
-            <h1 className="text-base font-black text-white leading-tight">{campaign.storeName}</h1>
-            <a
-              href={`https://instagram.com/${campaign.storeInstagram}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-amber-300 hover:underline flex items-center gap-1 mt-0.5"
-            >
-              <Instagram className="w-3.5 h-3.5 text-pink-400" />
-              <span>@{campaign.storeInstagram}</span>
-            </a>
+            <h1 className="text-base font-black text-white leading-tight">{storeName}</h1>
+            {storeInstagram && (
+              <a
+                href={`https://instagram.com/${storeInstagram}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-amber-300 hover:underline flex items-center gap-1 mt-0.5"
+              >
+                <Instagram className="w-3.5 h-3.5 text-pink-400" />
+                <span>@{storeInstagram}</span>
+              </a>
+            )}
           </div>
         </div>
 
@@ -185,10 +193,10 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 {campaign.requireInstagramFollow && (
                   <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3">
                     <div className="text-[11px] text-slate-300">
-                      <span>پیج <strong className="text-amber-300">@{campaign.storeInstagram}</strong> را فالو کرده‌اید؟</span>
+                      <span>پیج <strong className="text-amber-300">@{storeInstagram}</strong> را فالو کرده‌اید؟</span>
                     </div>
                     <a
-                      href={`https://instagram.com/${campaign.storeInstagram}`}
+                      href={`https://instagram.com/${storeInstagram}`}
                       target="_blank"
                       rel="noreferrer"
                       className="px-3 py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-xl text-[11px] shrink-0 flex items-center gap-1 shadow-md transition-all"
@@ -209,7 +217,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
 
               <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 text-center pt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>اطلاعات شما نزد {campaign.storeName} کاملا محفوظ است</span>
+                <span>اطلاعات شما نزد {storeName} کاملا محفوظ است</span>
               </div>
             </div>
           )}
@@ -297,14 +305,14 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 </div>
               ) : (
                 <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs text-slate-300">
-                  جهت دریافت هدیه خود، به دایرکت پیج <strong className="text-amber-300">@{campaign.storeInstagram}</strong> پیام دهید.
+                  جهت دریافت هدیه خود، به دایرکت پیج {storeInstagram ? <strong className="text-amber-300">@{storeInstagram}</strong> : 'فروشگاه'} پیام دهید.
                 </div>
               )}
 
               <div className="pt-2 space-y-2">
-                {campaign.storeWebsiteUrl && (
+                {storeWebsiteUrl && (
                   <a
-                    href={campaign.storeWebsiteUrl}
+                    href={storeWebsiteUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
@@ -314,15 +322,17 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                   </a>
                 )}
 
-                <a
-                  href={`https://instagram.com/${campaign.storeInstagram}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
-                >
-                  <Instagram className="w-4 h-4 text-pink-400" />
-                  <span>پیام به دایرکت ادمین در اینستاگرام</span>
-                </a>
+                {storeInstagram && (
+                  <a
+                    href={`https://instagram.com/${storeInstagram}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Instagram className="w-4 h-4 text-pink-400" />
+                    <span>پیام به دایرکت ادمین در اینستاگرام</span>
+                  </a>
+                )}
               </div>
             </div>
           )}
