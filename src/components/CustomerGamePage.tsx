@@ -329,7 +329,18 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 <SlotMachine prizes={campaign.prizes} onFinish={handleGameFinish} />
               )}
               {campaign.gameType === 'QUIZ' && (
-                <QuizGame prizes={campaign.prizes} onFinish={handleGameFinish} />
+                <QuizGame
+                  questions={campaign.quizQuestions && campaign.quizQuestions.length > 0 ? campaign.quizQuestions : [
+                    {
+                      id: 'default-q1',
+                      question: 'بهترین روش دریافت تخفیف از فروشگاه چیست؟',
+                      options: ['شرکت در کمپین', 'ارسال پیام به ادمین', 'هر دو مورد بالا'],
+                      correctOptionIndex: 2
+                    }
+                  ]}
+                  prizes={campaign.prizes}
+                  onFinish={handleGameFinish}
+                />
               )}
               {campaign.gameType === 'MYSTERY_BOX' && (
                 <MysteryBox prizes={campaign.prizes} onFinish={handleGameFinish} />
