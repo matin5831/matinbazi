@@ -1,3 +1,5 @@
+export const APP_VERSION = '1.1';
+
 export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'QUIZ' | 'MYSTERY_BOX';
 
 export interface Prize {
@@ -26,6 +28,8 @@ export interface Campaign {
   storeName: string;
   storeInstagram: string;
   storeLogoUrl?: string;
+  storeWebsiteUrl?: string;
+  useDefaultStoreInfo?: boolean;
   gameType: GameType;
   themeColor: string;
   accentColor: string;

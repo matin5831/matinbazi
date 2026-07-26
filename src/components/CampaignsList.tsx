@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Campaign } from '../types';
-import { Plus, Play, Copy, Check, Edit3, Trash2, Power, Sparkles, ExternalLink, QrCode, Users, Award, Share2 } from 'lucide-react';
+import { Plus, Play, Copy, Check, Edit3, Trash2, Power, Sparkles, ExternalLink, QrCode, Users, Award, Share2, RotateCcw } from 'lucide-react';
 
 interface CampaignsListProps {
   campaigns: Campaign[];
@@ -9,6 +9,7 @@ interface CampaignsListProps {
   onPlayDemo: (campaign: Campaign) => void;
   onToggleActive: (campaignId: string) => void;
   onDelete: (campaignId: string) => void;
+  onResetCampaign?: (campaignId: string) => void;
 }
 
 export const CampaignsList: React.FC<CampaignsListProps> = ({
@@ -18,6 +19,7 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
   onPlayDemo,
   onToggleActive,
   onDelete,
+  onResetCampaign,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -91,14 +93,20 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
               <div>
                 {/* Header Badge & Status */}
                 <div className="flex items-center justify-between mb-3">
-                  <span className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full border font-bold ${badge.color}`}>
-                    <span>{badge.icon}</span>
-                    <span>{badge.label}</span>
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full border font-bold ${badge.color}`}>
+                      <span>{badge.icon}</span>
+                      <span>{badge.label}</span>
+                    </span>
+
+                    <span className="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800">
+                      {camp.useDefaultStoreInfo ?? true ? 'اطلاعات عمومی' : 'اطلاعات اختصاصی'}
+                    </span>
+                  </div>
 
                   <button
                     onClick={() => onToggleActive(camp.id)}
-                    className={`text-[10px] px-2.5 py-1 rounded-full font-bold flex items-center gap-1 border transition-colors cursor-pointer ${
+                    className={`text-[10px] px-2.5 py-1 rounded-full font-bold flex items-center gap-1 border transition-colors cursor-pointer shrink-0 ${
                       camp.isActive
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                         : 'bg-slate-800 text-slate-400 border-slate-700'
@@ -169,6 +177,28 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
                   >
                     <Edit3 className="w-3.5 h-3.5 text-indigo-400" />
                     <span>ویرایش کمپین</span>
+                  </button>
+                </div>
+
+                {/* Reset & Delete Actions */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {onResetCampaign && (
+                    <button
+                      onClick={() => onResetCampaign(camp.id)}
+                      className="py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold rounded-xl flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                      title="پاکسازی تاریخچه شرکت‌کنندگان این کمپین جهت شروع مجدد"
+                    >
+                      <RotateCcw className="w-3 h-3 text-amber-400" />
+                      <span>شروع مجدد کمپین</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => onDelete(camp.id)}
+                    className="py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-bold rounded-xl flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3 h-3 text-rose-400" />
+                    <span>حذف کمپین</span>
                   </button>
                 </div>
 

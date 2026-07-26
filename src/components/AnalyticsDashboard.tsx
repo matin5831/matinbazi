@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PlayerLead, Campaign } from '../types';
-import { toggleRedeemStatus } from '../utils/storage';
-import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles, ShieldCheck, XCircle, SearchCode } from 'lucide-react';
+import { toggleRedeemStatus, resetCampaignLeads, getStoredLeads } from '../utils/storage';
+import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles, ShieldCheck, XCircle, SearchCode, RotateCcw } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
   leads: PlayerLead[];
@@ -251,7 +251,24 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
         </div>
 
         {/* Export Buttons */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          {filterCampaign !== 'ALL' && (
+            <button
+              onClick={() => {
+                const targetCamp = campaigns.find(c => c.id === filterCampaign);
+                if (confirm(`آیا از ریست لیدهای کمپین "${targetCamp?.title || ''}" اطمینان دارید؟ تمام لیدهای این کمپین پاک می‌شوند و کاربران می‌توانند دوباره شرکت کنند.`)) {
+                  resetCampaignLeads(filterCampaign);
+                  onLeadsUpdated(getStoredLeads());
+                }
+              }}
+              className="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="پاکسازی لیدهای این کمپین جهت شروع مجدد"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+              <span>ریست لیدهای این کمپین</span>
+            </button>
+          )}
+
           <button
             onClick={copyAllPhoneNumbers}
             className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"

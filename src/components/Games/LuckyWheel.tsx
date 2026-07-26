@@ -76,10 +76,10 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({ prizes, onFinish, disabl
       </div>
 
       {/* Outer Golden Glow & Border Ring */}
-      <div className="relative p-3 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-full shadow-[0_0_50px_rgba(234,179,8,0.3)] border-4 border-amber-300/60">
+      <div className="relative p-2 sm:p-3 bg-gradient-to-tr from-amber-500 via-amber-300 to-yellow-500 rounded-full shadow-[0_0_50px_rgba(234,179,8,0.3)] border-4 border-amber-300/60 max-w-full">
         
         {/* SVG Wheel */}
-        <div className="w-72 h-72 sm:w-80 sm:h-80 rounded-full overflow-hidden shadow-2xl relative">
+        <div className="w-[260px] h-[260px] xs:w-72 xs:h-72 sm:w-80 sm:h-80 rounded-full overflow-hidden shadow-2xl relative">
           <svg
             viewBox="0 0 400 400"
             className="w-full h-full transform transition-transform duration-[4500ms] ease-[cubic-bezier(0.15,0.95,0.2,1.0)]"

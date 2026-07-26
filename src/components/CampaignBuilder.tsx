@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Campaign, GameType, Prize, QuizQuestion } from '../types';
-import { Save, ArrowRight, Plus, Trash2, Sparkles, Sliders, Palette, ShieldAlert, Gift, HelpCircle } from 'lucide-react';
+import { Save, ArrowRight, Plus, Trash2, Sparkles, Sliders, Palette, ShieldAlert, Gift, HelpCircle, Store, Globe, Info } from 'lucide-react';
 
 interface CampaignBuilderProps {
   initialCampaign?: Campaign | null;
@@ -12,9 +12,12 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
   const [title, setTitle] = useState(initialCampaign?.title || 'جشنواره شانس فروشگاه 🎁');
   const [description, setDescription] = useState(initialCampaign?.description || 'کمپین هیجان‌انگیز اهدای کد تخفیف به فالوورهای اینستاگرام');
   const [gameType, setGameType] = useState<GameType>(initialCampaign?.gameType || 'WHEEL');
+  
+  const [useDefaultStoreInfo, setUseDefaultStoreInfo] = useState<boolean>(initialCampaign?.useDefaultStoreInfo ?? true);
   const [storeName, setStoreName] = useState(initialCampaign?.storeName || 'فروشگاه من');
   const [storeInstagram, setStoreInstagram] = useState(initialCampaign?.storeInstagram || 'my_store_page');
   const [storeLogoUrl, setStoreLogoUrl] = useState(initialCampaign?.storeLogoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80');
+  const [storeWebsiteUrl, setStoreWebsiteUrl] = useState(initialCampaign?.storeWebsiteUrl || '');
   
   const [requireInstagramFollow, setRequireInstagramFollow] = useState(initialCampaign?.requireInstagramFollow ?? true);
   const [requirePhoneNumber, setRequirePhoneNumber] = useState(initialCampaign?.requirePhoneNumber ?? true);
@@ -72,9 +75,11 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
       title,
       description,
       gameType,
+      useDefaultStoreInfo,
       storeName,
       storeInstagram,
       storeLogoUrl,
+      storeWebsiteUrl,
       themeColor: '#8b5cf6',
       accentColor: '#ec4899',
       bgGradient: 'from-purple-900 via-indigo-950 to-slate-950',
@@ -135,49 +140,163 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
             <span>۱. نوع بازی و مشخصات کلی کمپین</span>
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-slate-300 font-bold mb-1">عنوان کمپین</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
-                required
-              />
+          <div>
+            <label className="block text-slate-300 font-bold mb-1">عنوان کمپین</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="مثلا: گردونه شانس تابستانه"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
+              required
+            />
+          </div>
+
+          {/* Store Info Source Selection */}
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <label className="block text-slate-300 font-bold text-xs mb-1">
+              منبع اطلاعات فروشگاه در صفحه بازی مشتریان (لوگو، نام، آیدی اینستاگرام، وب‌سایت):
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setUseDefaultStoreInfo(true)}
+                className={`p-3 rounded-xl border text-right flex items-start gap-3 transition-all cursor-pointer ${
+                  useDefaultStoreInfo
+                    ? 'bg-amber-500/10 border-amber-400/60 text-amber-300'
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <Store className="w-5 h-5 shrink-0 text-amber-400 mt-0.5" />
+                <div>
+                  <div className="font-bold text-xs text-white">استفاده از تنظیمات پیش‌فرض فروشگاه</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                    اطلاعات عمومی فروشگاه از بخش تنظیمات داشبورد به صورت خودکار خوانده می‌شود.
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setUseDefaultStoreInfo(false)}
+                className={`p-3 rounded-xl border text-right flex items-start gap-3 transition-all cursor-pointer ${
+                  !useDefaultStoreInfo
+                    ? 'bg-amber-500/10 border-amber-400/60 text-amber-300'
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                }`}
+              >
+                <Globe className="w-5 h-5 shrink-0 text-amber-400 mt-0.5" />
+                <div>
+                  <div className="font-bold text-xs text-white">اطلاعات اختصاصی برای این کمپین</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                    تنظیم نام، آیدی اینستاگرام، وب‌سایت و لوگوی متفاوت مخصوص این کمپین.
+                  </div>
+                </div>
+              </button>
             </div>
 
-            <div>
-              <label className="block text-slate-300 font-bold mb-1">نام فروشگاه شما</label>
-              <input
-                type="text"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
-                required
-              />
-            </div>
+            {useDefaultStoreInfo ? (
+              <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl text-[11px] text-slate-400 flex items-center gap-2">
+                <Info className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>
+                  صفحه بازی مشتریان از نام، اینستاگرام، لوگو و لینک وب‌سایت موجود در بخش «تنظیمات فروشگاه» استفاده خواهد کرد.
+                </span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">نام اختصاصی فروشگاه</label>
+                  <input
+                    type="text"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                    placeholder="مثلا: فروشگاه برند خاص"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
+                    required={!useDefaultStoreInfo}
+                  />
+                </div>
 
-            <div>
-              <label className="block text-slate-300 font-bold mb-1">آیدی اینستاگرام فروشگاه (بدون @)</label>
-              <input
-                type="text"
-                value={storeInstagram}
-                onChange={(e) => setStoreInstagram(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
-                required
-              />
-            </div>
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">آیدی اینستاگرام اختصاصی (بدون @)</label>
+                  <input
+                    type="text"
+                    value={storeInstagram}
+                    onChange={(e) => setStoreInstagram(e.target.value)}
+                    placeholder="مثلا: my_store_page"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
+                    required={!useDefaultStoreInfo}
+                  />
+                </div>
 
-            <div>
-              <label className="block text-slate-300 font-bold mb-1">لینک لوگو فروشگاه (تصویر)</label>
-              <input
-                type="text"
-                value={storeLogoUrl}
-                onChange={(e) => setStoreLogoUrl(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
-              />
-            </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-300 font-bold mb-1">لوگوی اختصاصی کمپین</label>
+                  <div className="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800">
+                    {storeLogoUrl ? (
+                      <img src={storeLogoUrl} alt="لوگو" className="w-12 h-12 rounded-xl object-cover border border-amber-400 shrink-0" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-slate-950 border border-dashed border-slate-700 flex items-center justify-center text-slate-500 text-[10px] shrink-0">
+                        بدون لوگو
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all">
+                          <span>آپلود لوگو (حداکثر ۵۰۰KB)</span>
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const MAX_SIZE = 500 * 1024;
+                              if (file.size > MAX_SIZE) {
+                                alert(`حجم فایل لوگو (${(file.size / 1024).toFixed(0)} KB) بیشتر از حد مجاز ۵۰۰KB است.`);
+                                e.target.value = '';
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                const res = ev.target?.result as string;
+                                if (res) setStoreLogoUrl(res);
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                        {storeLogoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setStoreLogoUrl('')}
+                            className="text-[11px] text-rose-400 hover:underline"
+                          >
+                            حذف
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={storeLogoUrl}
+                        onChange={(e) => setStoreLogoUrl(e.target.value)}
+                        placeholder="یا درج لینک تصویر: https://..."
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white text-xs focus:border-amber-400 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">آدرس وب‌سایت اختصاصی</label>
+                  <input
+                    type="text"
+                    value={storeWebsiteUrl}
+                    onChange={(e) => setStoreWebsiteUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Game Type Picker */}

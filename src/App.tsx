@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Campaign, PlayerLead, StoreSettings } from './types';
+import { Campaign, PlayerLead, StoreSettings, APP_VERSION } from './types';
 import {
   getStoredCampaigns,
   saveCampaigns,
   getStoredLeads,
   getStoredSettings,
-  saveSettings
+  saveSettings,
+  resetCampaignLeads
 } from './utils/storage';
 import { Navbar } from './components/Navbar';
 import { CampaignsList } from './components/CampaignsList';
@@ -88,6 +89,14 @@ export default function App() {
     }
   };
 
+  const handleResetCampaign = (id: string) => {
+    if (confirm('آیا از شروع مجدد این کمپین اطمینان دارید؟ با این کار تمام آمار، لیدها و شرکت‌کنندگان قبلی این کمپین پاک می‌شوند و همه کاربران دوباره می‌توانند در کمپین شرکت کنند.')) {
+      resetCampaignLeads(id);
+      setCampaigns(getStoredCampaigns());
+      setLeads(getStoredLeads());
+    }
+  };
+
   const handleSaveSettings = (newSettings: StoreSettings) => {
     setStoreSettings(newSettings);
     saveSettings(newSettings);
@@ -150,6 +159,7 @@ export default function App() {
                 onPlayDemo={(camp) => setCustomerCampaign(camp)}
                 onToggleActive={handleToggleActiveCampaign}
                 onDelete={handleDeleteCampaign}
+                onResetCampaign={handleResetCampaign}
               />
             )}
 
@@ -178,8 +188,15 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500 dir-rtl">
-        <span>پلتفرم بازاریابی و گیمیفیکیشن متین بازی (Matin Bazi) مخصوص فروشگاه‌های آنلاین | آماده اجرا روی Render.com</span>
+      <footer className="border-t border-slate-900/80 py-6 text-xs text-slate-500 dir-rtl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span>پلتفرم بازاریابی و گیمیفیکیشن متین بازی (Matin Bazi) مخصوص فروشگاه‌های آنلاین</span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-amber-400 font-bold text-[11px] dir-ltr">
+              نسخه {APP_VERSION}
+            </span>
+          </div>
+        </div>
       </footer>
 
     </div>

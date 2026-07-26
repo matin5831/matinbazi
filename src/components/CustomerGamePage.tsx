@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Campaign, Prize } from '../types';
+import { Campaign, Prize, APP_VERSION } from '../types';
 import { LuckyWheel } from './Games/LuckyWheel';
 import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
 import { QuizGame } from './Games/QuizGame';
 import { MysteryBox } from './Games/MysteryBox';
-import { addLead, getStoredSettings } from '../utils/storage';
+import { addLead, getStoredSettings, getStoredLeads } from '../utils/storage';
 import { createWooCommerceCoupon } from '../utils/woocommerce';
-import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag, Frown, AlertTriangle, Send } from 'lucide-react';
 
 interface CustomerGamePageProps {
   campaign: Campaign;
@@ -16,26 +16,63 @@ interface CustomerGamePageProps {
 
 export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, onGoToAdmin }) => {
   const storeSettings = getStoredSettings();
-  const storeName = campaign.storeName || storeSettings.storeName || 'فروشگاه آنلاین';
-  const storeInstagram = (campaign.storeInstagram || storeSettings.instagramUsername || '').replace('@', '');
-  const storeLogoUrl = campaign.storeLogoUrl || storeSettings.logoUrl || '';
-  const storeWebsiteUrl = campaign.storeWebsiteUrl || storeSettings.websiteUrl || '';
+  const useDefault = campaign.useDefaultStoreInfo ?? true;
+
+  const storeName = useDefault
+    ? (storeSettings.storeName || campaign.storeName || 'فروشگاه آنلاین')
+    : (campaign.storeName || storeSettings.storeName || 'فروشگاه آنلاین');
+
+  const storeInstagram = useDefault
+    ? ((storeSettings.instagramUsername || campaign.storeInstagram || '').replace('@', ''))
+    : ((campaign.storeInstagram || storeSettings.instagramUsername || '').replace('@', ''));
+
+  const storeLogoUrl = useDefault
+    ? (storeSettings.logoUrl || campaign.storeLogoUrl || '')
+    : (campaign.storeLogoUrl || storeSettings.logoUrl || '');
+
+  const storeWebsiteUrl = useDefault
+    ? (storeSettings.websiteUrl || campaign.storeWebsiteUrl || '')
+    : (campaign.storeWebsiteUrl || storeSettings.websiteUrl || '');
 
   const [instagramHandle, setInstagramHandle] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isInstagramFollowed, setIsInstagramFollowed] = useState(false);
   const [step, setStep] = useState<'INPUT' | 'PLAY' | 'RESULT'>('INPUT');
   const [wonPrize, setWonPrize] = useState<Prize | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
   const [inputError, setInputError] = useState('');
   const [wooStatusMessage, setWooStatusMessage] = useState<string | null>(null);
+  const [sentToAdminCopied, setSentToAdminCopied] = useState(false);
+
+  const handleSendToAdmin = () => {
+    const handleClean = instagramHandle.trim().replace(/^@/, '');
+    const winMessage = `سلام وقت بخیر! 🎁\nمن در کمپین "${campaign.title}" برنده شدم.\n🏆 جایزه: ${wonPrize?.label || 'جایزه ویژه'}\n${wonPrize?.couponCode ? `🎟 کد تخفیف: ${wonPrize.couponCode}\n` : ''}📱 شماره همراه: ${phoneNumber || 'ثبت نشده'}\n🆔 آیدی اینستاگرام: ${handleClean ? `@${handleClean}` : 'ثبت نشده'}`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(winMessage);
+      setSentToAdminCopied(true);
+      setTimeout(() => setSentToAdminCopied(false), 4000);
+    }
+
+    if (storeInstagram) {
+      const cleanInsta = storeInstagram.trim().replace(/^@/, '');
+      window.open(`https://instagram.com/${cleanInsta}`, '_blank');
+    }
+  };
 
   const handleStartGame = (e: React.FormEvent) => {
     e.preventDefault();
     setInputError('');
 
-    if (campaign.requireInstagramFollow && !instagramHandle.trim()) {
-      setInputError('لطفا آیدی اینستاگرام خود را وارد کنید.');
-      return;
+    if (campaign.requireInstagramFollow) {
+      if (!instagramHandle.trim()) {
+        setInputError('لطفا آیدی اینستاگرام خود را وارد کنید.');
+        return;
+      }
+      if (!isInstagramFollowed) {
+        setInputError('لطفاً ابتدا پیج اینستاگرام را فالو کنید و تیک تأیید فالو را بزنید.');
+        return;
+      }
     }
 
     if (campaign.requirePhoneNumber) {
@@ -43,6 +80,28 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
         setInputError('لطفا شماره همراه معتبر (مثلا 09123456789) وارد کنید.');
         return;
       }
+    }
+
+    // Check if user has already participated in this campaign
+    const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
+    const cleanPhone = phoneNumber.trim().replace(/\s+/g, '');
+
+    const existingLeads = getStoredLeads();
+    const alreadyPlayed = existingLeads.some(lead => {
+      if (lead.campaignId !== campaign.id) return false;
+
+      const leadIg = (lead.instagramHandle || '').trim().toLowerCase().replace(/^@/, '');
+      const leadPhone = (lead.phoneNumber || '').trim().replace(/\s+/g, '');
+
+      const matchIg = cleanIg && leadIg && cleanIg === leadIg;
+      const matchPhone = cleanPhone && leadPhone && cleanPhone === leadPhone && cleanPhone !== 'ثبت‌نشده' && cleanPhone !== 'ثبت نشده';
+
+      return matchIg || matchPhone;
+    });
+
+    if (alreadyPlayed) {
+      setInputError('شما قبلاً با این آیدی اینستاگرام یا شماره همراه در این کمپین شرکت کرده‌اید. هر آیدی و شماره فقط یک بار مجاز به شرکت می‌باشد.');
+      return;
     }
 
     setStep('PLAY');
@@ -191,20 +250,46 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 )}
 
                 {campaign.requireInstagramFollow && (
-                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3">
-                    <div className="text-[11px] text-slate-300">
-                      <span>پیج <strong className="text-amber-300">@{storeInstagram}</strong> را فالو کرده‌اید؟</span>
+                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800/80 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs text-slate-200">
+                        <span className="block font-bold">۱. فالو کردن پیج اینستاگرام</span>
+                        <span className="text-[11px] text-amber-300 dir-ltr font-mono">@{storeInstagram || 'instagram_page'}</span>
+                      </div>
+                      <a
+                        href={`https://instagram.com/${storeInstagram}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setIsInstagramFollowed(true)}
+                        className="px-3.5 py-2 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:brightness-110 text-white font-bold rounded-xl text-xs shrink-0 flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+                      >
+                        <Instagram className="w-3.5 h-3.5" />
+                        <span>ورود به پیج و فالو</span>
+                      </a>
                     </div>
-                    <a
-                      href={`https://instagram.com/${storeInstagram}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-xl text-[11px] shrink-0 flex items-center gap-1 shadow-md transition-all"
-                    >
-                      <Instagram className="w-3 h-3" /> فالو پیج
-                    </a>
+
+                    <label className="flex items-start gap-2.5 pt-2.5 border-t border-slate-900 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isInstagramFollowed}
+                        onChange={(e) => setIsInstagramFollowed(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-400 focus:ring-offset-slate-950 shrink-0 cursor-pointer"
+                      />
+                      <span className="text-[11px] text-slate-300 leading-tight">
+                        ۲. <strong className="text-white">تأیید می‌کنم که پیج را فالو کرده‌ام</strong> (هنگام اهداء جایزه، فالو بودن پیج استعلام می‌شود).
+                      </span>
+                    </label>
                   </div>
                 )}
+
+                {/* Important Notice Box */}
+                <div className="bg-amber-950/70 border border-amber-500/40 p-3 rounded-2xl text-[11px] text-amber-200 flex items-start gap-2.5 leading-relaxed shadow-inner">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-amber-300 block mb-0.5 font-black">توجه بسیار مهم:</strong>
+                    لطفاً آیدی اینستاگرام و شماره همراه خود را کاملاً درست وارد کنید. در صورت ورود اطلاعات نادرست، حتی در صورت برنده شدن، هیچ‌گونه جایزه‌ای به شما تعلق نخواهد گرفت.
+                  </div>
+                </div>
 
                 <button
                   type="submit"
@@ -255,85 +340,148 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
           {/* STEP 3: RESULT SCREEN */}
           {step === 'RESULT' && wonPrize && (
             <div className="space-y-5 text-center animate-scale-up">
-              <div className="w-16 h-16 bg-amber-500/20 border-2 border-amber-400 rounded-full flex items-center justify-center mx-auto text-amber-300 shadow-xl shadow-amber-500/10">
-                <Gift className="w-8 h-8 animate-bounce" />
-              </div>
-
-              <div>
-                <span className="text-xs font-black text-amber-400 uppercase tracking-widest bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
-                  تبریک! شما برنده شدید 🎉
-                </span>
-                <h3 className="text-2xl font-black text-white mt-3 leading-tight">
-                  {wonPrize.label}
-                </h3>
-                <p className="text-xs text-slate-300 mt-1">
-                  کد تخفیف اختصاصی شما آماده استفاده در خرید بعدی است:
-                </p>
-              </div>
-
-              {wonPrize.couponCode ? (
-                <div className="bg-slate-950 p-4 rounded-2xl border border-amber-500/40 space-y-3">
-                  <span className="text-[10px] text-slate-400 block">کد تخفیف شما:</span>
-                  <div className="flex items-center justify-between bg-slate-900 px-4 py-3 rounded-xl border border-slate-800 font-mono text-base font-bold text-amber-300 dir-ltr">
-                    <span>{wonPrize.couponCode}</span>
-                    <button
-                      onClick={() => copyToClipboard(wonPrize.couponCode)}
-                      className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg flex items-center gap-1 transition-all cursor-pointer"
-                    >
-                      {copiedCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedCode ? 'کپی شد' : 'کپی'}</span>
-                    </button>
+              {wonPrize.isWin && !wonPrize.label.includes('پوچ') && !wonPrize.label.includes('متاسفانه') ? (
+                <>
+                  <div className="w-16 h-16 bg-amber-500/20 border-2 border-amber-400 rounded-full flex items-center justify-center mx-auto text-amber-300 shadow-xl shadow-amber-500/10">
+                    <Gift className="w-8 h-8 animate-bounce" />
                   </div>
 
-                  {wooStatusMessage && (
-                    <div className="pt-1 text-[11px] text-purple-300 bg-purple-950/60 border border-purple-500/30 p-2 rounded-xl flex items-center justify-center gap-1.5 dir-rtl">
-                      <ShoppingBag className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                      <span>{wooStatusMessage}</span>
+                  <div>
+                    <span className="text-xs font-black text-amber-400 uppercase tracking-widest bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+                      تبریک! شما برنده شدید 🎉
+                    </span>
+                    <h3 className="text-2xl font-black text-white mt-3 leading-tight">
+                      {wonPrize.label}
+                    </h3>
+                    <p className="text-xs text-slate-300 mt-1">
+                      کد تخفیف اختصاصی شما آماده استفاده در خرید بعدی است:
+                    </p>
+                  </div>
+
+                  {wonPrize.couponCode ? (
+                    <div className="bg-slate-950 p-4 rounded-2xl border border-amber-500/40 space-y-3">
+                      <span className="text-[10px] text-slate-400 block">کد تخفیف شما:</span>
+                      <div className="flex items-center justify-between bg-slate-900 px-4 py-3 rounded-xl border border-slate-800 font-mono text-base font-bold text-amber-300 dir-ltr">
+                        <span>{wonPrize.couponCode}</span>
+                        <button
+                          onClick={() => copyToClipboard(wonPrize.couponCode)}
+                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg flex items-center gap-1 transition-all cursor-pointer"
+                        >
+                          {copiedCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span>{copiedCode ? 'کپی شد' : 'کپی'}</span>
+                        </button>
+                      </div>
+
+                      {wooStatusMessage && (
+                        <div className="pt-1 text-[11px] text-purple-300 bg-purple-950/60 border border-purple-500/30 p-2 rounded-xl flex items-center justify-center gap-1.5 dir-rtl">
+                          <ShoppingBag className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                          <span>{wooStatusMessage}</span>
+                        </div>
+                      )}
+
+                      {/* Fallback & Support Info */}
+                      <div className="pt-2 text-[11px] text-slate-300 bg-slate-900/90 border border-slate-800 p-3 rounded-xl text-right leading-relaxed space-y-1.5">
+                        <p className="font-bold text-amber-300 flex items-center gap-1">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>این کد و آیدی شما در دیتابیس سیستم ثبت شد.</span>
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          در صورت بروز هرگونه مشکل یا عدم کارکرد کد در سایت، کافیست کد یا آیدی خود را به دایرکت پیج پیام دهید تا ادمین استعلام بگیرد.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs text-slate-300">
+                      جهت دریافت هدیه خود، به دایرکت پیج {storeInstagram ? <strong className="text-amber-300">@{storeInstagram}</strong> : 'فروشگاه'} پیام دهید.
                     </div>
                   )}
 
-                  {/* Fallback & Support Info */}
-                  <div className="pt-2 text-[11px] text-slate-300 bg-slate-900/90 border border-slate-800 p-3 rounded-xl text-right leading-relaxed space-y-1.5">
-                    <p className="font-bold text-amber-300 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>این کد و آیدی شما در دیتابیس سیستم ثبت شد.</span>
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      در صورت بروز هرگونه مشکل یا عدم کارکرد کد در سایت، کافیست کد یا آیدی خود را به دایرکت پیج پیام دهید تا ادمین استعلام بگیرد.
-                    </p>
+                  <div className="pt-2 space-y-2">
+                    {/* Direct Send to Admin Button */}
+                    <button
+                      onClick={handleSendToAdmin}
+                      className="w-full py-3.5 px-4 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:brightness-110 text-white font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-pink-600/25 border border-pink-400/30 cursor-pointer active:scale-95"
+                    >
+                      <Send className="w-4 h-4 text-pink-200 shrink-0" />
+                      <span>
+                        {sentToAdminCopied
+                          ? 'متن پیام کپی شد! در حال هدایت به دایرکت اینستاگرام...'
+                          : 'ارسال کد و مشخصات برنده به دایرکت ادمین'}
+                      </span>
+                    </button>
+
+                    {storeWebsiteUrl && (
+                      <a
+                        href={storeWebsiteUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
+                      >
+                        <span>استفاده از کد تخفیف در سایت فروشگاه</span>
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+
+                    {storeInstagram && !sentToAdminCopied && (
+                      <a
+                        href={`https://instagram.com/${storeInstagram.replace(/^@/, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
+                      >
+                        <Instagram className="w-4 h-4 text-pink-400" />
+                        <span>مشاهده پیج اینستاگرام فروشگاه</span>
+                      </a>
+                    )}
                   </div>
-                </div>
+                </>
               ) : (
-                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs text-slate-300">
-                  جهت دریافت هدیه خود، به دایرکت پیج {storeInstagram ? <strong className="text-amber-300">@{storeInstagram}</strong> : 'فروشگاه'} پیام دهید.
-                </div>
+                /* POOCH / NON-WIN SCREEN */
+                <>
+                  <div className="w-16 h-16 bg-rose-500/20 border-2 border-rose-400/80 rounded-full flex items-center justify-center mx-auto text-rose-300 shadow-xl shadow-rose-500/10">
+                    <Frown className="w-8 h-8 text-rose-400" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-xs font-black text-rose-400 uppercase tracking-widest bg-rose-400/10 px-3 py-1 rounded-full border border-rose-400/20">
+                      متأسفانه برنده نشدید 😔
+                    </span>
+                    <h3 className="text-xl font-black text-white mt-2 leading-tight">
+                      {wonPrize.label || 'پوچ'}
+                    </h3>
+                    <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 text-xs text-slate-300 leading-relaxed text-center space-y-1 mt-3">
+                      <p className="font-bold text-amber-300">متأسفانه برنده نشدید!</p>
+                      <p className="text-slate-400">در کمپین بعدی منتظر شما هستیم ✨</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 space-y-2">
+                    {storeInstagram && (
+                      <a
+                        href={`https://instagram.com/${storeInstagram}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full py-3 px-4 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-pink-600/20"
+                      >
+                        <Instagram className="w-4 h-4" />
+                        <span>دنبال کردن پیج برای کمپین‌های بعدی</span>
+                      </a>
+                    )}
+
+                    {storeWebsiteUrl && (
+                      <a
+                        href={storeWebsiteUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
+                      >
+                        <span>مشاهده محصولات فروشگاه</span>
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                </>
               )}
-
-              <div className="pt-2 space-y-2">
-                {storeWebsiteUrl && (
-                  <a
-                    href={storeWebsiteUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
-                  >
-                    <span>استفاده از کد تخفیف در سایت فروشگاه</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-
-                {storeInstagram && (
-                  <a
-                    href={`https://instagram.com/${storeInstagram}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all"
-                  >
-                    <Instagram className="w-4 h-4 text-pink-400" />
-                    <span>پیام به دایرکت ادمین در اینستاگرام</span>
-                  </a>
-                )}
-              </div>
             </div>
           )}
 
@@ -342,7 +490,12 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
 
       {/* Footer */}
       <footer className="w-full max-w-md py-3 text-center text-[11px] text-slate-500 border-t border-slate-800/60 flex items-center justify-between">
-        <span>پلتفرم متین بازی</span>
+        <div className="flex items-center gap-2">
+          <span>پلتفرم متین بازی</span>
+          <span className="text-[10px] bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-full text-amber-400 font-bold">
+            v{APP_VERSION}
+          </span>
+        </div>
         {onGoToAdmin && (
           <button
             onClick={onGoToAdmin}

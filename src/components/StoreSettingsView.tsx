@@ -175,16 +175,101 @@ export const StoreSettingsView: React.FC<StoreSettingsViewProps> = ({
             </div>
 
             <div>
-              <label className="block text-slate-300 font-bold mb-1">لینک تصویر لوگو فروشگاه</label>
-              <div className="relative">
-                <Image className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pr-9 pl-3 py-2.5 text-white focus:border-amber-400 focus:outline-none"
-                />
+              <label className="block text-slate-300 font-bold mb-1">لوگو فروشگاه</label>
+              
+              {/* Logo Preview & Upload Section */}
+              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+                <div className="flex items-center gap-4">
+                  {logoUrl ? (
+                    <div className="relative shrink-0">
+                      <img
+                        src={logoUrl}
+                        alt="لوگوی فروشگاه"
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400/80 shadow-md bg-slate-900"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setLogoUrl('')}
+                        className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-rose-600 hover:bg-rose-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold shadow cursor-pointer"
+                        title="حذف لوگو"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex flex-col items-center justify-center text-slate-500 shrink-0">
+                      <Image className="w-6 h-6" />
+                      <span className="text-[9px] mt-0.5">بدون لوگو</span>
+                    </div>
+                  )}
+
+                  <div className="flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="px-3 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>آپلود فایل لوگو (حداکثر ۵۰۰KB)</span>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+
+                            // Limit size to 500 KB (512,000 bytes)
+                            const MAX_SIZE = 500 * 1024;
+                            if (file.size > MAX_SIZE) {
+                              alert(`حجم تصویر انتخابی (${(file.size / 1024).toFixed(0)} کیلوبایت) بیش از حد مجاز است. حداکثر حجم مجاز برای حفظ سرعت سرور ۵۰۰ کیلوبایت می‌باشد.`);
+                              e.target.value = '';
+                              return;
+                            }
+
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const result = event.target?.result as string;
+                              if (result) {
+                                setLogoUrl(result);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      
+                      {logoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setLogoUrl('')}
+                          className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-rose-300 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                        >
+                          پاک کردن لوگو
+                        </button>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] text-slate-400">
+                      فرمت‌های پشتیبانی شده: PNG, JPG, WEBP (جهت بهینه‌سازی سرعت سرور، حداکثر حجم ۵۰۰KB تعیین شده است).
+                    </p>
+                  </div>
+                </div>
+
+                {/* External URL Input Option */}
+                <div className="pt-2 border-t border-slate-900">
+                  <label className="block text-slate-400 text-[11px] mb-1">یا درج آدرس اینترنتی (URL) لوگو:</label>
+                  <div className="relative">
+                    <Image className="w-4 h-4 text-slate-500 absolute right-3 top-2.5" />
+                    <input
+                      type="url"
+                      placeholder="https://myshop.com/logo.png"
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl pr-9 pl-3 py-2 text-white focus:border-amber-400 focus:outline-none text-xs"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

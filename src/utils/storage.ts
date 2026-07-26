@@ -135,6 +135,23 @@ export function saveSettings(settings: StoreSettings): void {
   }
 }
 
+export function resetCampaignLeads(campaignId: string): void {
+  try {
+    const leads = getStoredLeads().filter(l => l.campaignId !== campaignId);
+    saveLeads(leads);
+
+    const campaigns = getStoredCampaigns();
+    const campaignIdx = campaigns.findIndex(c => c.id === campaignId);
+    if (campaignIdx !== -1) {
+      campaigns[campaignIdx].totalPlays = 0;
+      campaigns[campaignIdx].totalWinners = 0;
+      saveCampaigns(campaigns);
+    }
+  } catch (e) {
+    console.error('Failed to reset campaign leads', e);
+  }
+}
+
 export function exportDataAsJSON(): string {
   const data = {
     settings: getStoredSettings(),
