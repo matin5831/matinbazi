@@ -1,5 +1,5 @@
 import { PlayerLead, GameType } from '../types';
-import { getStoredLeads, saveLeads, addLead as addLeadLocal, toggleRedeemStatus as toggleLocal, resetAllLeads as resetAllLocal, getAdminPassword } from './storage';
+import { getStoredLeads, saveLeads, addLead as addLeadLocal, toggleRedeemStatus as toggleLocal, resetAllLeads as resetAllLocal, resetCampaignLeads as resetCampaignLocal, getAdminPassword } from './storage';
 
 /**
  * Server-side API layer for leads (Render Key Value / Redis backend).
@@ -91,6 +91,20 @@ export async function resetAllOnServer(password: string): Promise<{ success: boo
   return { success: true, error: 'offline_fallback' };
 }
 
+/** Reset ONE campaign's leads server-side (admin only) — re-opens that campaign. */
+export async function resetCampaignOnServer(campaignId: string, password: string): Promise<{ success: boolean; error?: string }> {
+  const res = await fetchJson('/admin/reset-campaign', {
+    method: 'POST',
+    body: JSON.stringify({ campaignId, password }),
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+  });
+  if (res.ok) return { success: true };
+  if (res.status === 403) return { success: false, error: res.data?.error || 'wrong_password' };
+  // Offline → local reset fallback
+  resetCampaignLocal(campaignId);
+  return { success: true, error: 'offline_fallback' };
+}
+
 /** Set admin password server-side (first time only) */
 export async function setAdminPasswordOnServer(password: string): Promise<boolean> {
   const res = await fetchJson('/admin/set-password', {
@@ -121,8 +135,7 @@ export async function checkAndGetLeads(): Promise<PlayerLead[]> {
 
 /**
  * Server-authoritative duplicate check BEFORE the user plays.
- * When gameType is provided, checks per-game (for ALL-games campaigns).
- * Returns:
+ * Rule: ONE play per campaign per user (any game). Returns:
  *  - { duplicate: true }  → already played (block)
  *  - { duplicate: false } → OK to play
  *  - { offline: true }    → server unreachable (fall back to local check)
@@ -131,7 +144,6 @@ export async function checkDuplicateOnServer(payload: {
   campaignId: string;
   instagramHandle: string;
   phoneNumber: string;
-  gameType?: GameType;
 }): Promise<{ duplicate: boolean; offline?: boolean }> {
   const res = await fetchJson('/leads/check', {
     method: 'POST',

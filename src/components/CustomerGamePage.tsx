@@ -48,7 +48,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   // ALL-games campaign (hub) state
   const isAllGames = campaign.gameType === 'ALL';
   const [activeGame, setActiveGame] = useState<GameType>('WHEEL');
-  const [playedGames, setPlayedGames] = useState<Set<string>>(new Set());
+  const [hasPlayedCampaign, setHasPlayedCampaign] = useState(false); // ONE play per campaign
   const [hubLoading, setHubLoading] = useState(false);
 
   const GAME_META: { type: GameType; label: string; icon: string; desc: string; color: string }[] = [
@@ -59,29 +59,24 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     { type: 'MYSTERY_BOX', label: 'جعبه شانس', icon: '🎁', desc: 'یک جعبه باز کنید', color: 'text-rose-300 bg-rose-500/10 border-rose-500/30' },
   ];
 
+  // ONE play per campaign — check once whether this user already played this campaign
   const refreshPlayedGames = async () => {
     if (!isAllGames) return;
     setHubLoading(true);
     const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
     const cleanPhone = phoneNumber.trim();
-    const results = await Promise.all(
-      ALL_GAME_TYPES.map(async (gt) => {
-        const res = await checkDuplicateOnServer({
-          campaignId: campaign.id,
-          instagramHandle: cleanIg,
-          phoneNumber: cleanPhone,
-          gameType: gt,
-        });
-        return { gt, played: res.duplicate };
-      })
-    );
-    setPlayedGames(new Set(results.filter(r => r.played).map(r => r.gt)));
+    const res = await checkDuplicateOnServer({
+      campaignId: campaign.id,
+      instagramHandle: cleanIg,
+      phoneNumber: cleanPhone,
+    });
+    setHasPlayedCampaign(res.duplicate);
     setHubLoading(false);
   };
 
   const handleSelectGame = async (gt: GameType) => {
-    if (playedGames.has(gt)) {
-      setInputError('شما قبلاً این بازی را انجام داده‌اید. هر بازی فقط یک بار مجاز است!');
+    if (hasPlayedCampaign) {
+      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. تا زمان ریست کمپین توسط مدیریت، شانس دیگری ندارید!');
       return;
     }
     const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
@@ -90,11 +85,10 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
       campaignId: campaign.id,
       instagramHandle: cleanIg,
       phoneNumber: cleanPhone,
-      gameType: gt,
     });
     if (check.duplicate) {
-      setInputError('شما قبلاً این بازی را انجام داده‌اید. هر بازی فقط یک بار مجاز است!');
-      setPlayedGames(prev => new Set(prev).add(gt));
+      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. تا زمان ریست کمپین توسط مدیریت، شانس دیگری ندارید!');
+      setHasPlayedCampaign(true);
       return;
     }
     setActiveGame(gt);
@@ -207,10 +201,10 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     });
 
     if (serverRes.error === 'already_played') {
-      // Server rejected — user already played this game
-      setInputError('شما قبلاً این بازی را انجام داده‌اید. هر بازی فقط یک بار مجاز است.');
+      // Server rejected — user already played this campaign
+      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. تا زمان ریست کمپین توسط مدیریت، شانس دیگری ندارید!');
       if (isAllGames) {
-        setPlayedGames(prev => new Set(prev).add(recordedGameType));
+        setHasPlayedCampaign(true);
         setStep('HUB');
       } else {
         setStep('INPUT');
@@ -428,7 +422,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                   {campaign.title}
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                  {hubLoading ? 'در حال بررسی بازی‌های انجام‌شده...' : 'هر بازی را فقط یک بار می‌توانید انجام دهید — بعد از هر بازی، شانس جدیدی دارید!'}
+                  {hubLoading ? 'در حال بررسی وضعیت شرکت شما...' : 'یکی از ۵ بازی را انتخاب کنید — فقط یک شانس در این کمپین دارید!'}
                 </p>
               </div>
 
@@ -440,7 +434,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
 
               <div className="grid grid-cols-2 gap-3">
                 {GAME_META.map((gm) => {
-                  const isPlayed = playedGames.has(gm.type);
+                  const isPlayed = hasPlayedCampaign;
                   return (
                     <button
                       key={gm.type}
@@ -460,7 +454,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                       <span className="text-[10px] text-slate-500 block mt-1">{gm.desc}</span>
                       {isPlayed ? (
                         <span className="absolute top-2 left-2 text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-bold">
-                          ✓ انجام شد
+                          ✓ شرکت کردید
                         </span>
                       ) : (
                         <span className={`absolute top-2 left-2 text-[10px] ${gm.color.split(' ')[0]} bg-slate-900 px-2 py-0.5 rounded-full font-bold`}>
@@ -472,11 +466,19 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 })}
               </div>
 
+              {hasPlayedCampaign && (
+                <div className="bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs p-4 rounded-2xl text-center leading-relaxed animate-shake">
+                  ⛔ شما قبلاً در این کمپین شرکت کرده‌اید.
+                  <br />
+                  <span className="text-rose-400/80">برای شانس مجدد، منتظر ریست کمپین توسط مدیریت باشید.</span>
+                </div>
+              )}
+
               <div className="bg-amber-950/70 border border-amber-500/40 p-3 rounded-2xl text-[11px] text-amber-200 flex items-start gap-2.5 leading-relaxed">
                 <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div>
                   <strong className="text-amber-300 block mb-0.5 font-black">قوانین:</strong>
-                  هر آیدی اینستاگرام و شماره همراه فقط یک بار مجاز به شرکت در هر بازی است. اطلاعات شما نزد {storeName} کاملاً محفوظ است.
+                  هر آیدی اینستاگرام و شماره همراه فقط یک بار مجاز به شرکت در این کمپین است (فقط یکی از بازی‌ها). اطلاعات شما نزد {storeName} کاملاً محفوظ است.
                 </div>
               </div>
             </div>
@@ -592,16 +594,6 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                   )}
 
                   <div className="pt-2 space-y-2">
-                    {/* Next game button (ALL-games campaign) */}
-                    {isAllGames && (
-                      <button
-                        onClick={() => { setWonPrize(null); setStep('HUB'); refreshPlayedGames(); }}
-                        className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-xl border border-purple-400/30 cursor-pointer active:scale-95"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        <span>🎮 بازی بعدی — شانس جدید</span>
-                      </button>
-                    )}
                     {/* Direct Send to Admin Button */}
                     <button
                       onClick={handleSendToAdmin}

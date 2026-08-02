@@ -74,13 +74,13 @@ async function getLeads() {
   try { return JSON.parse(raw); } catch { return []; }
 }
 
-/** Check if a lead already exists for this campaign by IG or phone (server-side, bypass-proof)
- *  When gameType is provided, the check is per-game (for ALL-games campaigns). */
-async function findDuplicate(campaignId, cleanIg, cleanPhone, gameType) {
+/** Check if a lead already exists for this campaign by IG or phone (server-side, bypass-proof).
+ *  Rule: ONE play per campaign per user — regardless of how many games the campaign contains.
+ *  A reset of the campaign (admin) clears its leads, allowing new plays. */
+async function findDuplicate(campaignId, cleanIg, cleanPhone) {
   const leads = await getLeads();
   return leads.some((l) => {
     if (l.campaignId !== campaignId) return false;
-    if (gameType && l.gameType && l.gameType !== gameType) return false;
     const lIg = normalizeIg(l.instagramHandle || '');
     const lPhone = normalizePhone(l.phoneNumber || '');
     const igMatch = cleanIg.length >= 3 && lIg.length >= 3 && cleanIg === lIg;
@@ -117,11 +117,11 @@ app.get('/api/leads', async (req, res) => {
 /** POST duplicate check — public, used before a customer starts a game */
 app.post('/api/leads/check', async (req, res) => {
   try {
-    const { campaignId, instagramHandle, phoneNumber, gameType } = req.body || {};
+    const { campaignId, instagramHandle, phoneNumber } = req.body || {};
     if (!campaignId) return res.status(400).json({ success: false, error: 'missing_campaign' });
     const cleanIg = normalizeIg(instagramHandle || '');
     const cleanPhone = normalizePhone(phoneNumber || '');
-    const duplicate = await findDuplicate(campaignId, cleanIg, cleanPhone, gameType || null);
+    const duplicate = await findDuplicate(campaignId, cleanIg, cleanPhone);
     res.json({ success: true, duplicate });
   } catch (e) {
     res.status(500).json({ success: false, error: 'server_error' });
@@ -138,8 +138,8 @@ app.post('/api/leads', async (req, res) => {
     const cleanPhone = normalizePhone(phoneNumber || '');
 
     // ⛔ Server-side duplicate check — cannot be bypassed by clearing browser storage
-    // For ALL-games campaigns, check is per gameType (each game once per user)
-    const isDuplicate = await findDuplicate(campaignId, cleanIg, cleanPhone, gameType || null);
+    // Rule: ONE play per campaign per user (admin reset re-opens the campaign)
+    const isDuplicate = await findDuplicate(campaignId, cleanIg, cleanPhone);
     if (isDuplicate) {
       return res.status(409).json({
         success: false,
@@ -205,6 +205,26 @@ app.post('/api/admin/reset-all', async (req, res) => {
     }
     await kvSet(LEADS_KEY, JSON.stringify([]));
     res.json({ success: true, message: 'همه لیدها پاک شدند' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'server_error' });
+  }
+});
+
+/** Reset ONE campaign's leads (admin only) — re-opens that campaign for new plays */
+app.post('/api/admin/reset-campaign', async (req, res) => {
+  try {
+    const { password, campaignId } = req.body || {};
+    if (!campaignId) return res.status(400).json({ success: false, error: 'missing_campaign' });
+    const storedSalt = await kvGet(ADMIN_SALT_KEY);
+    const storedHash = await kvGet(ADMIN_PASS_KEY);
+    if (!storedSalt || !storedHash) return res.status(403).json({ success: false, error: 'no_admin_password' });
+    if (hashPassword(String(password || ''), storedSalt) !== storedHash) {
+      return res.status(403).json({ success: false, error: 'wrong_password' });
+    }
+    const leads = await getLeads();
+    const remaining = leads.filter((l) => l.campaignId !== campaignId);
+    await kvSet(LEADS_KEY, JSON.stringify(remaining));
+    res.json({ success: true, message: `لیدهای کمپین پاک شدند (${leads.length - remaining.length} حذف)` });
   } catch (e) {
     res.status(500).json({ success: false, error: 'server_error' });
   }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PlayerLead, Campaign } from '../types';
 import { toggleRedeemStatus, resetCampaignLeads, resetAllLeads, getStoredLeads, getAdminPassword } from '../utils/storage';
-import { toggleLeadOnServer, resetAllOnServer, fetchLeadsFromServer } from '../utils/api';
+import { toggleLeadOnServer, resetAllOnServer, fetchLeadsFromServer, resetCampaignOnServer } from '../utils/api';
 import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles, ShieldCheck, XCircle, SearchCode, RotateCcw } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
@@ -270,11 +270,18 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
           {filterCampaign !== 'ALL' && (
             <button
-              onClick={() => {
+              onClick={async () => {
                 const targetCamp = campaigns.find(c => c.id === filterCampaign);
                 if (confirm(`آیا از ریست لیدهای کمپین "${targetCamp?.title || ''}" اطمینان دارید؟ تمام لیدهای این کمپین پاک می‌شوند و کاربران می‌توانند دوباره شرکت کنند.`)) {
-                  resetCampaignLeads(filterCampaign);
-                  onLeadsUpdated(getStoredLeads());
+                  const adminPassword = getAdminPassword() || '';
+                  const serverRes = await resetCampaignOnServer(filterCampaign, adminPassword);
+                  if (serverRes.success) {
+                    resetCampaignLeads(filterCampaign); // local copy sync
+                    onLeadsUpdated(getStoredLeads());
+                    alert(`✅ کمپین "${targetCamp?.title || ''}" ریست شد — کاربران می‌توانند دوباره شرکت کنند.`);
+                  } else {
+                    alert(`❌ خطا در ریست کمپین: ${serverRes.error === 'wrong_password' ? 'رمز ادمین نادرست است — ابتدا دوباره وارد شوید.' : 'ارتباط با سرور برقرار نشد.'}`);
+                  }
                 }
               }}
               className="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
