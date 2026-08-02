@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <img
               src="/matinbazi-logo.png"
               alt="متین بازی"
-              className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover shadow-[0_0_24px_rgba(245,158,11,0.35)] shrink-0 ring-2 ring-amber-400/40"
+              className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl object-cover shrink-0 shadow-[0_0_24px_rgba(168,85,247,0.35)]"
             />
             <div>
               <div className="flex items-center gap-1.5">
