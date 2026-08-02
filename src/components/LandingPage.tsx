@@ -28,7 +28,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ campaigns, onStart }) 
   };
 
   return (
-    <div className="min-h-screen ambient-canvas text-slate-800 font-['Vazirmatn',sans-serif] selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-dvh bg-slate-50 text-slate-800 font-['Vazirmatn',sans-serif] selection:bg-amber-500 selection:text-slate-950">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
 
         {/* Hero */}

@@ -344,7 +344,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
       {/* Leads Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-right text-xs text-slate-300">
+                  <table className="w-full min-w-[760px] text-xs text-right">
             <thead className="bg-slate-950 text-slate-400 font-bold border-b border-slate-800 text-[11px]">
               <tr>
                 <th className="p-4">آیدی اینستاگرام</th>

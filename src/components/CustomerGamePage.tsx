@@ -256,7 +256,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col justify-between items-center p-4 sm:p-6 dir-rtl font-['Vazirmatn',sans-serif]">
+    <div className="min-h-dvh bg-slate-100 text-slate-800 flex flex-col justify-between items-center p-4 sm:p-6 dir-rtl font-['Vazirmatn',sans-serif]">
       
       {/* Top Store Header */}
       <header className="w-full max-w-md pt-2 pb-4 flex items-center justify-between border-b border-slate-200/80">

@@ -54,6 +54,32 @@ body {
   background-color: var(--color-surface-950);
 }
 
+/* ===== Mobile / touch refinements ===== */
+html {
+  -webkit-text-size-adjust: 100%; /* prevent auto font-scaling on iOS landscape */
+}
+
+html,
+body {
+  overflow-x: clip; /* hard no-horizontal-scroll from accidental child overflow */
+}
+
+body {
+  overscroll-behavior-y: none; /* no rubber-band/scroll-chaining bolt-ons */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Faster, native-feeling taps (no ~300ms delay) + no double-tap zoom on controls */
+button,
+[role="button"],
+input,
+select,
+textarea,
+label,
+a {
+  touch-action: manipulation;
+}
+
 /* Ambient depth — subtle radial glows on the app canvas */
 .ambient-canvas {
   background:

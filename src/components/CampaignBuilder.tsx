@@ -106,30 +106,30 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6 dir-rtl animate-fade-in">
       
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onCancel}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
-          >
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <div>
-            <h2 className="text-base font-bold text-white">
-              {initialCampaign ? 'ویرایش کمپین گیمیفیکیشن' : 'ساخت کمپین بازی جدید'}
-            </h2>
-            <p className="text-xs text-slate-300">تنظیمات بازی، جوایز و قوانین جذب فالوور را مشخص کنید</p>
-          </div>
-        </div>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onCancel}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <div>
+                  <h2 className="text-base font-bold text-white">
+                    {initialCampaign ? 'ویرایش کمپین گیمیفیکیشن' : 'ساخت کمپین بازی جدید'}
+                  </h2>
+                  <p className="text-xs text-slate-300">تنظیمات بازی، جوایز و قوانین جذب فالوور را مشخص کنید</p>
+                </div>
+              </div>
 
-        <button
-          onClick={handleSubmit}
-          className="px-5 py-2.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        >
-          <Save className="w-4 h-4" />
-          <span>ذخیره و فعال‌سازی کمپین</span>
-        </button>
-      </div>
+              <button
+                onClick={handleSubmit}
+                className="px-5 py-2.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer sm:w-auto"
+              >
+                <Save className="w-4 h-4" />
+                <span>ذخیره و فعال‌سازی کمپین</span>
+              </button>
+            </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 text-xs">
         

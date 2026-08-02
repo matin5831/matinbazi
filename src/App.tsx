@@ -221,7 +221,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen ambient-canvas text-slate-100 font-['Vazirmatn',sans-serif] selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-dvh ambient-canvas text-slate-100 font-['Vazirmatn',sans-serif] selection:bg-amber-500 selection:text-slate-950">
       
       {/* Admin Authentication Lock Screen */}
       {!isAdminAuthed && (
