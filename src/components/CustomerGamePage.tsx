@@ -76,7 +76,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
 
   const handleSelectGame = async (gt: GameType) => {
     if (hasPlayedCampaign) {
-      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. تا زمان ریست کمپین توسط مدیریت، شانس دیگری ندارید!');
+      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. کمپین بعدی تخفیفات به زودی شروع می‌شود!');
       return;
     }
     const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
@@ -87,7 +87,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
       phoneNumber: cleanPhone,
     });
     if (check.duplicate) {
-      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. تا زمان ریست کمپین توسط مدیریت، شانس دیگری ندارید!');
+      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. کمپین بعدی تخفیفات به زودی شروع می‌شود!');
       setHasPlayedCampaign(true);
       return;
     }
@@ -202,7 +202,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
 
     if (serverRes.error === 'already_played') {
       // Server rejected — user already played this campaign
-      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. تا زمان ریست کمپین توسط مدیریت، شانس دیگری ندارید!');
+      setInputError('شما قبلاً در این کمپین شرکت کرده‌اید. کمپین بعدی تخفیفات به زودی شروع می‌شود!');
       if (isAllGames) {
         setHasPlayedCampaign(true);
         setStep('HUB');
@@ -470,7 +470,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 <div className="bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs p-4 rounded-2xl text-center leading-relaxed animate-shake">
                   ⛔ شما قبلاً در این کمپین شرکت کرده‌اید.
                   <br />
-                  <span className="text-rose-400/80">برای شانس مجدد، منتظر ریست کمپین توسط مدیریت باشید.</span>
+                  <span className="text-rose-400/80">برای شانس مجدد، منتظر کمپین بعدی تخفیفات باشید.</span>
                 </div>
               )}
 

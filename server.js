@@ -207,7 +207,7 @@ app.post('/api/leads', async (req, res) => {
       return res.status(409).json({
         success: false,
         error: 'already_played',
-        message: 'شما قبلاً در این بازی شرکت کرده‌اید. هر آیدی و شماره فقط یک بار مجاز است.',
+        message: 'شما قبلاً در این کمپین شرکت کرده‌اید. کمپین بعدی تخفیفات به زودی شروع می‌شود!',
       });
     }
 
