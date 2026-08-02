@@ -24,11 +24,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Brand Logo & Store Badge */}
         <div className="flex items-center justify-between w-full sm:w-auto">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-300 via-orange-500 to-rose-500 p-0.5 shadow-[0_0_24px_rgba(245,158,11,0.35)] shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-300 font-black text-base sm:text-lg">
-                🚀
-              </div>
-            </div>
+            <img
+              src="/matinbazi-logo.png"
+              alt="متین بازی"
+              className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover shadow-[0_0_24px_rgba(245,158,11,0.35)] shrink-0 ring-2 ring-amber-400/40"
+            />
             <div>
               <div className="flex items-center gap-1.5">
                 <h1 className="text-sm sm:text-base font-black text-white tracking-tight">متین بازی</h1>
