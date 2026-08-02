@@ -239,9 +239,24 @@ app.post('/api/admin/verify', async (req, res) => {
 
 // ─── Serve built frontend (SPA fallback) ───
 const distDir = path.join(__dirname, 'dist');
+const indexPath = path.join(distDir, 'index.html');
+const fs = await import('fs');
+if (!fs.existsSync(indexPath)) {
+  console.error('[MatinBazi] ⚠️ dist/index.html NOT FOUND — build command likely not run (Render sets "bun install" by default).');
+  console.error('[MatinBazi] Fix: Service Settings → Build & Deploy → Build Command → "npm run build" → redeploy.');
+}
 app.use(express.static(distDir));
 app.get(/^(?!\/api\/).*/, (req, res) => {
-  res.sendFile(path.join(distDir, 'index.html'));
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(503).send(
+      '<html dir="rtl"><body style="font-family:Tahoma;background:#0b0d12;color:#fbbf24;text-align:center;padding:60px">' +
+      '<h2>⚠️ بیلد فرانت‌اند اجرا نشده است</h2>' +
+      '<p style="color:#94a3b8">در Render: Settings ← Build &amp; Deploy ← Build Command را روی <code>npm run build</code> تنظیم کنید و دوباره دیپلوی کنید.</p>' +
+      '</body></html>'
+    );
+  }
 });
 
 // ─── Start ───
