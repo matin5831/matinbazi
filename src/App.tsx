@@ -36,6 +36,7 @@ export default function App() {
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null | 'NEW'>(null);
   const [customerCampaign, setCustomerCampaign] = useState<Campaign | null>(null);
   const [showLanding, setShowLanding] = useState(false); // plain site URL → game descriptions page
+  const [routeResolved, setRouteResolved] = useState(false); // blank until the landing/customer/admin route is decided
   const [showNetlifyModal, setShowNetlifyModal] = useState(false);
   const [isAdminAuthed, setIsAdminAuthed] = useState(false);
   const [isAdminRequested, setIsAdminRequested] = useState(false); // ?admin=1 → admin panel (locked)
@@ -114,6 +115,15 @@ export default function App() {
           setShowLanding(true);
         }
       }
+
+      // Route decided — stop showing the blank loading screen
+      setRouteResolved(true);
+    }).catch(() => {
+      // Server unreachable — still reveal the route based on local data
+      if (!(adminParam === '1' || adminParam === 'true') && loadedCampaigns.length > 0) {
+        setShowLanding(true);
+      }
+      setRouteResolved(true);
     });
   }, []);
 
@@ -174,6 +184,14 @@ export default function App() {
     setLeads(getStoredLeads());
     setStoreSettings(getStoredSettings());
   };
+
+  // ── Route guards (all decided inside useEffect) ──
+
+  // Blank loading screen while the route is being decided — prevents the admin
+  // login flash on the public (landing/customer) URLs.
+  if (!routeResolved) {
+    return <div className="min-h-screen ambient-canvas" />;
+  }
 
   // Customer view: shown when a campaign is selected AND admin was NOT requested.
   // ?play=ID / ?play=random → game directly; plain URL → landing page; ?admin=1 → admin panel.
