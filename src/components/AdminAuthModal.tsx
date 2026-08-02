@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { KeyRound, Lock, ShieldCheck, Eye, EyeOff, Sparkles, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { getAdminPassword, setAdminPassword, verifyAdminPassword } from '../utils/storage';
+import { setAdminPasswordOnServer, verifyAdminPasswordOnServer } from '../utils/api';
 
 interface AdminAuthModalProps {
   onSuccess: () => void;
@@ -15,7 +16,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -28,10 +29,20 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
         setError('تکرار رمز عبور با رمز اصلی مطابقت ندارد.');
         return;
       }
+      // Register password server-side too (authoritative for reset/leads endpoints)
+      await setAdminPasswordOnServer(password);
       setAdminPassword(password);
       onSuccess();
     } else {
-      if (verifyAdminPassword(password)) {
+      // Verify against server first (authoritative), fall back to local
+      const serverResult = await verifyAdminPasswordOnServer(password);
+      if (serverResult !== null) {
+        if (serverResult.ok) {
+          onSuccess();
+        } else {
+          setError('رمز عبور وارد شده اشتباه است!');
+        }
+      } else if (verifyAdminPassword(password)) {
         onSuccess();
       } else {
         setError('رمز عبور وارد شده اشتباه است!');

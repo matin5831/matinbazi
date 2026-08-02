@@ -5,6 +5,7 @@ import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
 import { QuizGame } from './Games/QuizGame';
 import { MysteryBox } from './Games/MysteryBox';
+import { addLeadToServer, checkDuplicateOnServer } from '../utils/api';
 import { addLead, getStoredSettings, getStoredLeads, normalizePhoneNumber } from '../utils/storage';
 import { createWooCommerceCoupon } from '../utils/woocommerce';
 import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag, Frown, AlertTriangle, Send } from 'lucide-react';
@@ -60,7 +61,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     }
   };
 
-  const handleStartGame = (e: React.FormEvent) => {
+  const handleStartGame = async (e: React.FormEvent) => {
     e.preventDefault();
     setInputError('');
 
@@ -87,22 +88,37 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
     const cleanPhone = normalizePhoneNumber(phoneNumber);
 
-    const existingLeads = getStoredLeads();
-    const alreadyPlayed = existingLeads.some(lead => {
-      if (lead.campaignId !== campaign.id) return false;
-
-      const leadIg = (lead.instagramHandle || '').trim().toLowerCase().replace(/^@/, '');
-      const leadPhone = normalizePhoneNumber(lead.phoneNumber || '');
-
-      const matchIg = cleanIg.length >= 3 && leadIg.length >= 3 && cleanIg === leadIg;
-      const matchPhone = cleanPhone.length >= 10 && leadPhone.length >= 10 && cleanPhone === leadPhone;
-
-      return matchIg || matchPhone;
+    // ⛔ Server-authoritative check (bypass-proof: clearing browser storage won't help)
+    const serverCheck = await checkDuplicateOnServer({
+      campaignId: campaign.id,
+      instagramHandle: cleanIg,
+      phoneNumber: cleanPhone,
     });
 
-    if (alreadyPlayed) {
+    if (serverCheck.duplicate) {
       setInputError('شما قبلاً با این آیدی اینستاگرام یا شماره همراه در این کمپین شرکت کرده‌اید. هر آیدی و شماره فقط یک بار مجاز به شرکت می‌باشد.');
       return;
+    }
+
+    if (serverCheck.offline) {
+      // Server unreachable (local dev) → local duplicate check fallback
+      const existingLeads = getStoredLeads();
+      const alreadyPlayed = existingLeads.some(lead => {
+        if (lead.campaignId !== campaign.id) return false;
+
+        const leadIg = (lead.instagramHandle || '').trim().toLowerCase().replace(/^@/, '');
+        const leadPhone = normalizePhoneNumber(lead.phoneNumber || '');
+
+        const matchIg = cleanIg.length >= 3 && leadIg.length >= 3 && cleanIg === leadIg;
+        const matchPhone = cleanPhone.length >= 10 && leadPhone.length >= 10 && cleanPhone === leadPhone;
+
+        return matchIg || matchPhone;
+      });
+
+      if (alreadyPlayed) {
+        setInputError('شما قبلاً با این آیدی اینستاگرام یا شماره همراه در این کمپین شرکت کرده‌اید. هر آیدی و شماره فقط یک بار مجاز به شرکت می‌باشد.');
+        return;
+      }
     }
 
     setStep('PLAY');
@@ -111,8 +127,8 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   const handleGameFinish = async (prize: Prize) => {
     setWonPrize(prize);
 
-    // Save lead data
-    addLead({
+    // Save lead data — server-authoritative (Redis backend), local fallback for dev
+    const serverRes = await addLeadToServer({
       campaignId: campaign.id,
       campaignTitle: campaign.title,
       instagramHandle: instagramHandle.startsWith('@') ? instagramHandle : `@${instagramHandle}`,
@@ -121,6 +137,26 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
       couponCode: prize.couponCode,
       gameType: campaign.gameType,
     });
+
+    if (serverRes.error === 'already_played') {
+      // Server rejected — user already played (shouldn't normally happen since we pre-check)
+      setInputError('شما قبلاً در این بازی شرکت کرده‌اید. هر آیدی و شماره فقط یک بار مجاز است.');
+      setStep('INPUT');
+      return;
+    }
+
+    // Sync local storage copy too (keeps dashboard consistent in dev/offline mode)
+    if (!serverRes.lead) {
+      addLead({
+        campaignId: campaign.id,
+        campaignTitle: campaign.title,
+        instagramHandle: instagramHandle.startsWith('@') ? instagramHandle : `@${instagramHandle}`,
+        phoneNumber: phoneNumber || 'ثبت نشده',
+        prizeWon: prize.label,
+        couponCode: prize.couponCode,
+        gameType: campaign.gameType,
+      });
+    }
 
     // Auto sync coupon code to WooCommerce if enabled
     if (prize.couponCode) {

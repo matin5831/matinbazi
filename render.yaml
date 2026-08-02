@@ -1,10 +1,11 @@
 services:
   - type: web
     name: matin-bazi
-    env: static
+    runtime: node
+    plan: free
     buildCommand: npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PlayerLead, Campaign } from '../types';
-import { toggleRedeemStatus, resetCampaignLeads, resetAllLeads, getStoredLeads } from '../utils/storage';
+import { toggleRedeemStatus, resetCampaignLeads, resetAllLeads, getStoredLeads, getAdminPassword } from '../utils/storage';
+import { toggleLeadOnServer, resetAllOnServer, fetchLeadsFromServer } from '../utils/api';
 import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles, ShieldCheck, XCircle, SearchCode, RotateCcw } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
@@ -14,6 +15,17 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
   const [inquiryQuery, setInquiryQuery] = useState('');
   const [filterCampaign, setFilterCampaign] = useState<string>('ALL');
   const [copiedPhones, setCopiedPhones] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  // Load server-side leads on mount (server is authoritative when reachable)
+  React.useEffect(() => {
+    (async () => {
+      setSyncing(true);
+      const serverLeads = await fetchLeadsFromServer();
+      if (serverLeads) onLeadsUpdated(serverLeads);
+      setSyncing(false);
+    })();
+  }, []);
 
   // Inquiry lookup match
   const inquiryMatch = inquiryQuery.trim()
@@ -42,9 +54,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
   const redeemedCount = leads.filter(l => l.isRedeemed).length;
   const conversionRate = totalPlays > 0 ? ((totalWinners / totalPlays) * 100).toFixed(1) : '0';
 
-  const handleToggleStatus = (id: string) => {
-    const updated = toggleRedeemStatus(id);
-    onLeadsUpdated(updated);
+  const handleToggleStatus = async (id: string) => {
+    const updated = await toggleLeadOnServer(id);
+    if (updated) {
+      onLeadsUpdated(updated);
+    } else {
+      onLeadsUpdated(getStoredLeads());
+    }
   };
 
   const copyAllPhoneNumbers = () => {
@@ -286,11 +302,19 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
           </button>
 
           <button
-            onClick={() => {
+            onClick={async () => {
+              const adminPassword = getAdminPassword() || '';
               if (confirm('⚠️ آیا از ریست کامل همه کمپین‌ها اطمینان دارید؟\n\nتمام آیدی‌ها و شماره‌های ثبت‌شده پاک می‌شوند و همه کاربران می‌توانند دوباره یک بار در بازی‌ها شرکت کنند.')) {
-                resetAllLeads();
-                onLeadsUpdated(getStoredLeads());
-                alert('✅ ریست کامل انجام شد! همه کاربران می‌توانند دوباره شرکت کنند.');
+                const result = await resetAllOnServer(adminPassword);
+                if (result.success) {
+                  const freshLeads = await fetchLeadsFromServer();
+                  onLeadsUpdated(freshLeads || getStoredLeads());
+                  alert('✅ ریست کامل انجام شد! همه کاربران می‌توانند دوباره شرکت کنند.');
+                } else if (result.error === 'wrong_password' || result.error === 'no_admin_password') {
+                  alert('❌ خطا در احراز هویت ادمین! رمز عبور ادمین ابتدا باید در سرور ثبت شود (از صفحه ورود، رمز را دوباره وارد کنید).');
+                } else {
+                  alert('⚠️ سرور در دسترس نبود؛ ریست فقط به‌صورت محلی انجام شد.');
+                }
               }
             }}
             className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"

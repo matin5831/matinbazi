@@ -8,6 +8,7 @@ import {
   saveSettings,
   resetCampaignLeads
 } from './utils/storage';
+import { fetchLeadsFromServer } from './utils/api';
 import { Navbar } from './components/Navbar';
 import { CampaignsList } from './components/CampaignsList';
 import { CampaignBuilder } from './components/CampaignBuilder';
@@ -44,6 +45,11 @@ export default function App() {
     setCampaigns(loadedCampaigns);
     setLeads(loadedLeads);
     setStoreSettings(loadedSettings);
+
+    // Pull authoritative leads from server (admin view — requires admin password header)
+    fetchLeadsFromServer().then(serverLeads => {
+      if (serverLeads) setLeads(serverLeads);
+    });
 
     // Direct campaign URL query check (e.g. ?campaign=cmp-wheel-01 or ?play=cmp-wheel-01)
     // Special value "random" picks a random ACTIVE campaign (floating button on store site)
