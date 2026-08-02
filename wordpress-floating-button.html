@@ -1,0 +1,56 @@
+<!-- ===== دکمه شناور بازی و جایزه (متین بازی) ===== -->
+<style>
+  #mb-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ea580c 100%);
+    color: #0b0d12;
+    font-family: Vazirmatn, Tahoma, sans-serif;
+    font-weight: 900;
+    font-size: 15px;
+    text-decoration: none;
+    padding: 14px 22px;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
+    direction: rtl;
+  }
+  #mb-fab:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 14px 32px rgba(245, 158, 11, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35);
+  }
+  #mb-fab:active {
+    transform: scale(0.96);
+  }
+  #mb-fab .mb-icon {
+    font-size: 22px;
+    line-height: 1;
+    animation: mb-bounce 2s ease-in-out infinite;
+  }
+  @keyframes mb-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  /* جلوگیری از هم‌پوشانی با دکمه‌های چت پشتیبانی */
+  @media (max-width: 768px) {
+    #mb-fab {
+      bottom: 16px;
+      right: 16px;
+      padding: 12px 18px;
+      font-size: 13px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #mb-fab .mb-icon { animation: none; }
+  }
+</style>
+
+<a id="mb-fab" href="https://matinbazi.onrender.com/?play=random" target="_blank" rel="noopener">
+  <span class="mb-icon">🎁</span>
+  <span>بازی و جایزه!</span>
+</a>
