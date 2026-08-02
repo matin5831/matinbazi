@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.1.8';
+export const APP_VERSION = '1.1.9';
 
 export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'QUIZ' | 'MYSTERY_BOX' | 'ALL';
 
@@ -65,6 +65,7 @@ export interface PlayerLead {
   wonAt: string;
   isRedeemed: boolean;
   gameType: GameType;
+  createdAt?: number; // epoch ms — unused coupons auto-invalidate after 48h
 }
 
 export interface StoreSettings {

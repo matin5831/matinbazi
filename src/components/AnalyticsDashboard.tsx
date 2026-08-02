@@ -4,6 +4,13 @@ import { toggleRedeemStatus, resetCampaignLeads, resetAllLeads, getStoredLeads, 
 import { toggleLeadOnServer, resetAllOnServer, fetchLeadsFromServer, resetCampaignOnServer } from '../utils/api';
 import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles, ShieldCheck, XCircle, SearchCode, RotateCcw } from 'lucide-react';
 
+// Coupons auto-invalidate 48h after win if not confirmed as purchased
+const COUPON_EXPIRY_MS = 48 * 60 * 60 * 1000;
+function isCouponExpired(lead: PlayerLead): boolean {
+  if (lead.isRedeemed || !lead.createdAt) return false; // redeemed ok; legacy leads stay active
+  return Date.now() - lead.createdAt > COUPON_EXPIRY_MS;
+}
+
 interface AnalyticsDashboardProps {
   leads: PlayerLead[];
   campaigns: Campaign[];
@@ -372,26 +379,26 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
                       {lead.wonAt}
                     </td>
                     <td className="p-4 text-center">
-                      <button
-                        onClick={() => handleToggleStatus(lead.id)}
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 transition-all cursor-pointer ${
-                          lead.isRedeemed
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-                        }`}
-                      >
-                        {lead.isRedeemed ? (
-                          <>
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>خرید انجام شد</span>
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-3 h-3" />
-                            <span>در انتظار خرید</span>
-                          </>
-                        )}
-                      </button>
+                      {lead.isRedeemed ? (
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>خرید انجام شد</span>
+                        </span>
+                      ) : isCouponExpired(lead) ? (
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                          <XCircle className="w-3 h-3" />
+                          <span>باطل شد (۴۸‌ساعت)</span>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleToggleStatus(lead.id)}
+                          className="px-3 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition-all cursor-pointer"
+                          title="در انتظار خرید — برای تأیید خرید کلیک کنید"
+                        >
+                          <Clock className="w-3 h-3" />
+                          <span>در انتظار خرید</span>
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

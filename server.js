@@ -227,6 +227,7 @@ app.post('/api/leads', async (req, res) => {
       gameType: gameType || '',
       wonAt: persianDate,
       isRedeemed: false,
+      createdAt: now.getTime(), // epoch ms — used to auto-expire unused coupons after 48h
     };
 
     const leads = await getLeads();

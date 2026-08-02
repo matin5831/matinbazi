@@ -88,7 +88,8 @@ export function addLead(lead: Omit<PlayerLead, 'id' | 'wonAt' | 'isRedeemed'>): 
     ...lead,
     id: 'lead-' + Date.now(),
     wonAt: persianDate,
-    isRedeemed: false
+    isRedeemed: false,
+    createdAt: now.getTime(),
   };
 
   const updatedLeads = [newLead, ...leads];

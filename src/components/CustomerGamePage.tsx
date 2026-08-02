@@ -8,7 +8,7 @@ import { MysteryBox } from './Games/MysteryBox';
 import { addLeadToServer, checkDuplicateOnServer } from '../utils/api';
 import { addLead, getStoredSettings, getStoredLeads, normalizePhoneNumber } from '../utils/storage';
 import { createWooCommerceCoupon } from '../utils/woocommerce';
-import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag, Frown, AlertTriangle, Send } from 'lucide-react';
+import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag, Frown, AlertTriangle, Send, Clock } from 'lucide-react';
 
 interface CustomerGamePageProps {
   campaign: Campaign;
@@ -568,6 +568,13 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                           <span>{copiedCode ? 'کپی شد' : 'کپی'}</span>
                         </button>
                       </div>
+
+                      {wonPrize.couponCode && (
+                        <div className="flex items-center justify-center gap-1.5 text-[10px] text-amber-600 bg-amber-100 border border-amber-300 p-2 rounded-xl">
+                          <Clock className="w-3.5 h-3.5 shrink-0" />
+                          <span>این کد تخفیف فقط <strong>۴۸ ساعت</strong> معتبر است — پس از آن به‌صورت خودکار باطل می‌شود!</span>
+                        </div>
+                      )}
 
                       {wooStatusMessage && (
                         <div className="pt-1 text-[11px] text-purple-700 bg-purple-50 border border-purple-500/30 p-2 rounded-xl flex items-center justify-center gap-1.5 dir-rtl">
