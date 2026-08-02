@@ -233,6 +233,20 @@ app.post('/api/leads', async (req, res) => {
     leads.unshift(lead);
     await kvSet(LEADS_KEY, JSON.stringify(leads));
 
+    // 📈 Update the campaign's play/winner counters so the admin dashboard is accurate
+    const campaignsRaw = await kvGet(CAMPAIGNS_KEY);
+    if (campaignsRaw) {
+      const campaigns = JSON.parse(campaignsRaw);
+      const idx = campaigns.findIndex((c) => c.id === campaignId);
+      if (idx !== -1) {
+        campaigns[idx].totalPlays = (campaigns[idx].totalPlays || 0) + 1;
+        if (couponCode) {
+          campaigns[idx].totalWinners = (campaigns[idx].totalWinners || 0) + 1;
+        }
+        await kvSet(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+      }
+    }
+
     res.json({ success: true, lead, duplicate: false });
   } catch (e) {
     console.error('[API] add lead error:', e);
@@ -287,6 +301,17 @@ app.post('/api/admin/reset-campaign', async (req, res) => {
     const leads = await getLeads();
     const remaining = leads.filter((l) => l.campaignId !== campaignId);
     await kvSet(LEADS_KEY, JSON.stringify(remaining));
+    // Reset the campaign's play/winner counters too
+    const resetsRes = await kvGet(CAMPAIGNS_KEY);
+    if (resetsRes) {
+      const campaigns = JSON.parse(resetsRes);
+      const idx = campaigns.findIndex((c) => c.id === campaignId);
+      if (idx !== -1) {
+        campaigns[idx].totalPlays = 0;
+        campaigns[idx].totalWinners = 0;
+        await kvSet(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+      }
+    }
     res.json({ success: true, message: `لیدهای کمپین پاک شدند (${leads.length - remaining.length} حذف)` });
   } catch (e) {
     res.status(500).json({ success: false, error: 'server_error' });
