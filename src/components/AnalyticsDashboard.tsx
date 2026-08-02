@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PlayerLead, Campaign } from '../types';
-import { toggleRedeemStatus, resetCampaignLeads, getStoredLeads } from '../utils/storage';
+import { toggleRedeemStatus, resetCampaignLeads, resetAllLeads, getStoredLeads } from '../utils/storage';
 import { Users, Phone, Award, Download, Copy, Check, Search, Filter, CheckCircle2, Clock, Sparkles, ShieldCheck, XCircle, SearchCode, RotateCcw } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
@@ -283,6 +283,21 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
           >
             <Download className="w-4 h-4" />
             <span>خروجی اکسل (CSV)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (confirm('⚠️ آیا از ریست کامل همه کمپین‌ها اطمینان دارید؟\n\nتمام آیدی‌ها و شماره‌های ثبت‌شده پاک می‌شوند و همه کاربران می‌توانند دوباره یک بار در بازی‌ها شرکت کنند.')) {
+                resetAllLeads();
+                onLeadsUpdated(getStoredLeads());
+                alert('✅ ریست کامل انجام شد! همه کاربران می‌توانند دوباره شرکت کنند.');
+              }
+            }}
+            className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+            title="پاکسازی تمام لیدهای همه کمپین‌ها جهت شروع مجدد"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
+            <span>ریست کامل همه کمپین‌ها</span>
           </button>
         </div>
 

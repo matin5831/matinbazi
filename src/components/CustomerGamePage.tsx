@@ -5,7 +5,7 @@ import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
 import { QuizGame } from './Games/QuizGame';
 import { MysteryBox } from './Games/MysteryBox';
-import { addLead, getStoredSettings, getStoredLeads } from '../utils/storage';
+import { addLead, getStoredSettings, getStoredLeads, normalizePhoneNumber } from '../utils/storage';
 import { createWooCommerceCoupon } from '../utils/woocommerce';
 import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag, Frown, AlertTriangle, Send } from 'lucide-react';
 
@@ -83,18 +83,19 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     }
 
     // Check if user has already participated in this campaign
+    // Normalize: Persian/Arabic digits → English, strip @, spaces, +98 → 0
     const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
-    const cleanPhone = phoneNumber.trim().replace(/\s+/g, '');
+    const cleanPhone = normalizePhoneNumber(phoneNumber);
 
     const existingLeads = getStoredLeads();
     const alreadyPlayed = existingLeads.some(lead => {
       if (lead.campaignId !== campaign.id) return false;
 
       const leadIg = (lead.instagramHandle || '').trim().toLowerCase().replace(/^@/, '');
-      const leadPhone = (lead.phoneNumber || '').trim().replace(/\s+/g, '');
+      const leadPhone = normalizePhoneNumber(lead.phoneNumber || '');
 
-      const matchIg = cleanIg && leadIg && cleanIg === leadIg;
-      const matchPhone = cleanPhone && leadPhone && cleanPhone === leadPhone && cleanPhone !== 'ثبت‌نشده' && cleanPhone !== 'ثبت نشده';
+      const matchIg = cleanIg.length >= 3 && leadIg.length >= 3 && cleanIg === leadIg;
+      const matchPhone = cleanPhone.length >= 10 && leadPhone.length >= 10 && cleanPhone === leadPhone;
 
       return matchIg || matchPhone;
     });

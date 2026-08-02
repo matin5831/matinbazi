@@ -152,6 +152,34 @@ export function resetCampaignLeads(campaignId: string): void {
   }
 }
 
+export function resetAllLeads(): void {
+  try {
+    saveLeads([]);
+
+    const campaigns = getStoredCampaigns().map(c => ({
+      ...c,
+      totalPlays: 0,
+      totalWinners: 0
+    }));
+    saveCampaigns(campaigns);
+  } catch (e) {
+    console.error('Failed to reset all leads', e);
+  }
+}
+
+/** Normalize phone numbers: Persian/Arabic digits → English, strip spaces/dashes, +98 → 0 */
+export function normalizePhoneNumber(phone: string): string {
+  const faDigits = '۰۱۲۳۴۵۶۷۸۹';
+  const arDigits = '٠١٢٣٤٥٦٧٨٩';
+  let s = phone.trim();
+  s = s.replace(/[۰-۹]/g, d => String(faDigits.indexOf(d)));
+  s = s.replace(/[٠-٩]/g, d => String(arDigits.indexOf(d)));
+  s = s.replace(/[\s\-().]/g, '');
+  if (s.startsWith('+98')) s = '0' + s.slice(3);
+  if (s.startsWith('0098')) s = '0' + s.slice(4);
+  return s;
+}
+
 export function exportDataAsJSON(): string {
   const data = {
     settings: getStoredSettings(),
