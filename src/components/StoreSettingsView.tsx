@@ -276,16 +276,16 @@ export const StoreSettingsView: React.FC<StoreSettingsViewProps> = ({
         </div>
 
         {/* WooCommerce REST API Card */}
-        <div className="bg-slate-900 border border-purple-500/30 rounded-3xl p-6 shadow-2xl space-y-5 relative overflow-hidden">
+        <div className="bg-slate-900 border border-amber-500/25 rounded-3xl p-6 shadow-2xl space-y-5 relative overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-400/30 text-purple-300 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/30 text-amber-300 flex items-center justify-center font-bold">
                 <ShoppingBag className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <span>اتصال به API ووکامرس (WooCommerce REST API)</span>
-                  <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 font-semibold">
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">
                     ثبت اتوماتیک کدهای تخفیف
                   </span>
                 </h3>
@@ -301,7 +301,7 @@ export const StoreSettingsView: React.FC<StoreSettingsViewProps> = ({
                 onChange={(e) => setEnableWooCommerce(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
             </label>
           </div>
 
@@ -327,7 +327,7 @@ export const StoreSettingsView: React.FC<StoreSettingsViewProps> = ({
                     placeholder="https://myshop.com"
                     value={wooCommerceUrl}
                     onChange={(e) => setWooCommerceUrl(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pr-9 pl-3 py-2.5 text-white focus:border-purple-400 focus:outline-none"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pr-9 pl-3 py-2.5 text-white focus:border-amber-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -341,7 +341,7 @@ export const StoreSettingsView: React.FC<StoreSettingsViewProps> = ({
                     placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxx"
                     value={wooCommerceConsumerKey}
                     onChange={(e) => setWooCommerceConsumerKey(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pr-9 pl-3 py-2.5 text-white font-mono focus:border-purple-400 focus:outline-none dir-ltr"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pr-9 pl-3 py-2.5 text-white font-mono focus:border-amber-400 focus:outline-none dir-ltr"
                   />
                 </div>
               </div>
@@ -355,7 +355,7 @@ export const StoreSettingsView: React.FC<StoreSettingsViewProps> = ({
                     placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxx"
                     value={wooCommerceConsumerSecret}
                     onChange={(e) => setWooCommerceConsumerSecret(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pr-9 pl-3 py-2.5 text-white font-mono focus:border-purple-400 focus:outline-none dir-ltr"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pr-9 pl-3 py-2.5 text-white font-mono focus:border-amber-400 focus:outline-none dir-ltr"
                   />
                 </div>
               </div>

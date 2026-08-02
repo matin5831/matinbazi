@@ -160,7 +160,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
           {storeLogoUrl ? (
             <img src={storeLogoUrl} alt={storeName} className="w-12 h-12 rounded-full border-2 border-amber-400 object-cover shadow-lg" />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center font-black text-lg text-white shadow-lg">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-black text-lg text-slate-950 shadow-lg">
               {storeName.charAt(0)}
             </div>
           )}
@@ -261,7 +261,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                         target="_blank"
                         rel="noreferrer"
                         onClick={() => setIsInstagramFollowed(true)}
-                        className="px-3.5 py-2 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:brightness-110 text-white font-bold rounded-xl text-xs shrink-0 flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+                        className="px-3.5 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-slate-950 font-black rounded-xl text-xs shrink-0 flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all"
                       >
                         <Instagram className="w-3.5 h-3.5" />
                         <span>ورود به پیج و فالو</span>
@@ -411,7 +411,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                     {/* Direct Send to Admin Button */}
                     <button
                       onClick={handleSendToAdmin}
-                      className="w-full py-3.5 px-4 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:brightness-110 text-white font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-pink-600/25 border border-pink-400/30 cursor-pointer active:scale-95"
+                      className="w-full py-3.5 px-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-slate-950 font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-amber-500/25 border border-amber-300/40 cursor-pointer active:scale-95"
                     >
                       <Send className="w-4 h-4 text-pink-200 shrink-0" />
                       <span>
@@ -472,7 +472,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                         href={`https://instagram.com/${storeInstagram}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full py-3 px-4 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-pink-600/20"
+                        className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20"
                       >
                         <Instagram className="w-4 h-4" />
                         <span>دنبال کردن پیج برای کمپین‌های بعدی</span>

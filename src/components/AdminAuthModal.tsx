@@ -44,13 +44,13 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
       
       {/* Background Decorative Glows */}
       <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 overflow-hidden animate-scale-up">
         
         {/* Icon & Title Header */}
         <div className="text-center space-y-3 mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 via-purple-600 to-indigo-600 p-0.5 mx-auto shadow-xl shadow-amber-500/10">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-300 via-orange-500 to-rose-500 p-0.5 mx-auto shadow-xl shadow-amber-500/20">
             <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-300">
               {isFirstTimeSetup ? <KeyRound className="w-8 h-8" /> : <Lock className="w-8 h-8" />}
             </div>

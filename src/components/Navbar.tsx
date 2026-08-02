@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Brand Logo & Store Badge */}
         <div className="flex items-center justify-between w-full sm:w-auto">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-400 via-purple-600 to-indigo-600 p-0.5 shadow-[0_0_20px_rgba(234,179,8,0.3)] shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-300 via-orange-500 to-rose-500 p-0.5 shadow-[0_0_24px_rgba(245,158,11,0.35)] shrink-0">
               <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-300 font-black text-base sm:text-lg">
                 🚀
               </div>
@@ -54,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('CAMPAIGNS')}
             className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer flex-1 sm:flex-none justify-center ${
               activeTab === 'CAMPAIGNS'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black shadow-md shadow-amber-500/25'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -66,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('ANALYTICS')}
             className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer flex-1 sm:flex-none justify-center ${
               activeTab === 'ANALYTICS'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black shadow-md shadow-amber-500/25'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setActiveTab('SETTINGS')}
             className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer flex-1 sm:flex-none justify-center ${
               activeTab === 'SETTINGS'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black shadow-md shadow-amber-500/25'
                 : 'text-slate-400 hover:text-white'
             }`}
           >

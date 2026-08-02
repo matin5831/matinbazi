@@ -82,7 +82,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
             <h3 className="text-2xl font-black text-white">{totalPlays.toLocaleString('fa-IR')}</h3>
             <span className="text-[10px] text-emerald-400 mt-1 block">ترافیک ورودی فعال</span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
             <Users className="w-6 h-6" />
           </div>
         </div>
@@ -112,10 +112,10 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ leads, c
         <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl flex items-center justify-between">
           <div>
             <span className="text-[11px] text-slate-400 font-bold block mb-1">تخفیف‌های استفاده‌شده</span>
-            <h3 className="text-2xl font-black text-purple-400">{redeemedCount.toLocaleString('fa-IR')}</h3>
-            <span className="text-[10px] text-purple-300 mt-1 block">خرید قطعی ثبت‌شده</span>
+            <h3 className="text-2xl font-black text-amber-400">{redeemedCount.toLocaleString('fa-IR')}</h3>
+            <span className="text-[10px] text-amber-300 mt-1 block">خرید قطعی ثبت‌شده</span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>

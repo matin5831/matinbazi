@@ -1,1 +1,64 @@
 @import "tailwindcss";
+
+/* ===== Matin Bazi Design Tokens ===== */
+@theme {
+  /* Brand accent — gold/amber world */
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #d97706;
+  --color-brand-700: #b45309;
+
+  /* Surface system — deep slate with warm undertone */
+  --color-surface-950: #0b0d12;
+  --color-surface-900: #131722;
+  --color-surface-800: #1c2230;
+
+  /* Motion */
+  --animate-fade-in: fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-scale-up: scale-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-shake: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-up {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-3px); }
+    40%, 60% { transform: translateX(3px); }
+  }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Base: rich dark canvas */
+body {
+  background-color: var(--color-surface-950);
+}
+
+/* Ambient depth — subtle radial glows on the app canvas */
+.ambient-canvas {
+  background:
+    radial-gradient(55% 45% at 50% 0%, rgba(139, 92, 246, 0.08), transparent 70%),
+    radial-gradient(45% 35% at 100% 100%, rgba(245, 158, 11, 0.06), transparent 65%),
+    radial-gradient(40% 30% at 0% 85%, rgba(56, 189, 248, 0.04), transparent 60%),
+    var(--color-surface-950);
+}

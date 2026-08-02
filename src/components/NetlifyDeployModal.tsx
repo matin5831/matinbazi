@@ -58,7 +58,7 @@ export const NetlifyDeployModal: React.FC<NetlifyDeployModalProps> = ({ onClose 
             
             {/* Step 1 */}
             <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 flex items-start gap-3">
-              <div className="w-7 h-7 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center shrink-0">
                 ۱
               </div>
               <div className="space-y-2 w-full">
@@ -71,7 +71,7 @@ export const NetlifyDeployModal: React.FC<NetlifyDeployModalProps> = ({ onClose 
 
             {/* Step 2 */}
             <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 flex items-start gap-3">
-              <div className="w-7 h-7 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center shrink-0">
                 ۲
               </div>
               <div className="space-y-2 w-full">
@@ -84,7 +84,7 @@ export const NetlifyDeployModal: React.FC<NetlifyDeployModalProps> = ({ onClose 
 
             {/* Step 3 */}
             <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 flex items-start gap-3">
-              <div className="w-7 h-7 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center shrink-0">
                 ۳
               </div>
               <div className="space-y-3 w-full">
@@ -138,7 +138,7 @@ export const NetlifyDeployModal: React.FC<NetlifyDeployModalProps> = ({ onClose 
           <div className="pt-2 flex justify-end">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 text-xs font-black rounded-xl transition-all shadow-md shadow-amber-500/20 cursor-pointer"
             >
               متوجه شدم، متشکرم!
             </button>

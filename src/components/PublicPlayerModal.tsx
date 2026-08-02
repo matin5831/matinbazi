@@ -76,7 +76,7 @@ export const PublicPlayerModal: React.FC<PublicPlayerModalProps> = ({ campaign, 
             {campaign.storeLogoUrl ? (
               <img src={campaign.storeLogoUrl} alt={campaign.storeName} className="w-10 h-10 rounded-full border-2 border-amber-400 object-cover" />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-black text-slate-950">
                 {campaign.storeName.charAt(0)}
               </div>
             )}
@@ -264,7 +264,7 @@ export const PublicPlayerModal: React.FC<PublicPlayerModalProps> = ({ campaign, 
                   href={`https://instagram.com/${campaign.storeInstagram}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 hover:from-amber-400 hover:to-orange-500 transition-all"
                 >
                   <ExternalLink className="w-4 h-4" />
                   <span>ورود به پیج و خرید از فروشگاه</span>

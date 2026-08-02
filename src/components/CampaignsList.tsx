@@ -87,7 +87,7 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
             <div
               key={camp.id}
               className={`bg-slate-900 border rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 shadow-xl relative overflow-hidden ${
-                camp.isActive ? 'border-slate-800 hover:border-purple-500/50' : 'border-slate-800/50 opacity-70'
+                camp.isActive ? 'border-slate-800 hover:border-amber-500/40' : 'border-slate-800/50 opacity-70'
               }`}
             >
               <div>
@@ -128,7 +128,7 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
                 {/* Stats Summary */}
                 <div className="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800/80 mb-5">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-purple-400 shrink-0" />
+                    <Users className="w-4 h-4 text-amber-400 shrink-0" />
                     <div>
                       <span className="text-[10px] text-slate-500 block">تعداد بازی</span>
                       <strong className="text-xs text-white">{camp.totalPlays.toLocaleString('fa-IR')}</strong>
@@ -151,9 +151,9 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
                 {/* Primary Demo Play Button */}
                 <button
                   onClick={() => onPlayDemo(camp)}
-                  className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs rounded-xl shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <Play className="w-3.5 h-3.5 fill-white" />
+                  <Play className="w-3.5 h-3.5 fill-slate-950" />
                   <span>تست و اجرای زنده بازی (نمای مشتری)</span>
                 </button>
 
@@ -175,7 +175,7 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
                     onClick={() => onEdit(camp)}
                     className="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold rounded-xl flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-indigo-400" />
+                    <Edit3 className="w-3.5 h-3.5 text-amber-400" />
                     <span>ویرایش کمپین</span>
                   </button>
                 </div>
