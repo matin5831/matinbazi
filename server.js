@@ -43,6 +43,8 @@ async function kvSet(key, value) {
 
 // ─── Keys ───
 const LEADS_KEY = 'matinbazi:leads';
+const SETTINGS_KEY = 'matinbazi:settings';
+const CAMPAIGNS_KEY = 'matinbazi:campaigns';
 const ADMIN_PASS_KEY = 'matinbazi:admin_pass_hash';
 const ADMIN_SALT_KEY = 'matinbazi:admin_pass_salt';
 
@@ -109,6 +111,60 @@ app.get('/api/leads', async (req, res) => {
       }
     }
     res.json({ success: true, leads: await getLeads() });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'server_error' });
+  }
+});
+
+/** GET store settings — public (customer pages need store info: name, logo, IG) */
+app.get('/api/settings', async (req, res) => {
+  try {
+    const raw = await kvGet(SETTINGS_KEY);
+    res.json({ success: true, settings: raw ? JSON.parse(raw) : null });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'server_error' });
+  }
+});
+
+/** PUT store settings — admin only (server-side store info so ALL browsers/devices see the same brand) */
+app.put('/api/settings', async (req, res) => {
+  try {
+    const { settings, password } = req.body || {};
+    const salt = await kvGet(ADMIN_SALT_KEY);
+    const hash = await kvGet(ADMIN_PASS_KEY);
+    if (!salt || !hash || hashPassword(String(password || ''), salt) !== hash) {
+      return res.status(403).json({ success: false, error: 'unauthorized' });
+    }
+    if (!settings || typeof settings !== 'object') return res.status(400).json({ success: false, error: 'invalid_settings' });
+    await kvSet(SETTINGS_KEY, JSON.stringify(settings));
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'server_error' });
+  }
+});
+
+/** GET campaigns — public (customer pages resolve ?play=ID / ?play=random from server data) */
+app.get('/api/campaigns', async (req, res) => {
+  try {
+    const raw = await kvGet(CAMPAIGNS_KEY);
+    res.json({ success: true, campaigns: raw ? JSON.parse(raw) : null });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'server_error' });
+  }
+});
+
+/** PUT campaigns — admin only (server-side campaigns so ALL browsers/devices see the same list) */
+app.put('/api/campaigns', async (req, res) => {
+  try {
+    const { campaigns, password } = req.body || {};
+    const salt = await kvGet(ADMIN_SALT_KEY);
+    const hash = await kvGet(ADMIN_PASS_KEY);
+    if (!salt || !hash || hashPassword(String(password || ''), salt) !== hash) {
+      return res.status(403).json({ success: false, error: 'unauthorized' });
+    }
+    if (!Array.isArray(campaigns)) return res.status(400).json({ success: false, error: 'invalid_campaigns' });
+    await kvSet(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+    res.json({ success: true });
   } catch (e) {
     res.status(500).json({ success: false, error: 'server_error' });
   }

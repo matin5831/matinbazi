@@ -1,4 +1,4 @@
-import { PlayerLead, GameType } from '../types';
+import { PlayerLead, GameType, Campaign, StoreSettings } from '../types';
 import { getStoredLeads, saveLeads, addLead as addLeadLocal, toggleRedeemStatus as toggleLocal, resetAllLeads as resetAllLocal, resetCampaignLeads as resetCampaignLocal, getAdminPassword } from './storage';
 
 /**
@@ -38,6 +38,38 @@ export async function fetchLeadsFromServer(): Promise<PlayerLead[] | null> {
   if (res.ok && res.data?.leads) return res.data.leads as PlayerLead[];
   if (res.status === 403) return null; // unauthorized — don't fall back to stale local list for admin view
   return null;
+}
+
+/** Fetch store settings from server (public). Returns null when not set / offline. */
+export async function fetchSettingsFromServer(): Promise<StoreSettings | null> {
+  const res = await fetchJson('/settings');
+  if (res.ok && res.data?.settings) return res.data.settings as StoreSettings;
+  return null;
+}
+
+/** Save store settings to server (admin only). Returns true on success. */
+export async function saveSettingsToServer(settings: StoreSettings, password: string): Promise<boolean> {
+  const res = await fetchJson('/settings', {
+    method: 'PUT',
+    body: JSON.stringify({ settings, password }),
+  });
+  return res.ok;
+}
+
+/** Fetch campaigns from server (public). Returns null when not set / offline. */
+export async function fetchCampaignsFromServer(): Promise<Campaign[] | null> {
+  const res = await fetchJson('/campaigns');
+  if (res.ok && Array.isArray(res.data?.campaigns)) return res.data.campaigns as Campaign[];
+  return null;
+}
+
+/** Save campaigns to server (admin only). Returns true on success. */
+export async function saveCampaignsToServer(campaigns: Campaign[], password: string): Promise<boolean> {
+  const res = await fetchJson('/campaigns', {
+    method: 'PUT',
+    body: JSON.stringify({ campaigns, password }),
+  });
+  return res.ok;
 }
 
 /**

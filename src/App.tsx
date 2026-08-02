@@ -6,9 +6,10 @@ import {
   getStoredLeads,
   getStoredSettings,
   saveSettings,
-  resetCampaignLeads
+  resetCampaignLeads,
+  getAdminPassword
 } from './utils/storage';
-import { fetchLeadsFromServer } from './utils/api';
+import { fetchLeadsFromServer, fetchSettingsFromServer, fetchCampaignsFromServer, saveSettingsToServer, saveCampaignsToServer } from './utils/api';
 import { Navbar } from './components/Navbar';
 import { CampaignsList } from './components/CampaignsList';
 import { CampaignBuilder } from './components/CampaignBuilder';
@@ -51,28 +52,48 @@ export default function App() {
       if (serverLeads) setLeads(serverLeads);
     });
 
-    // Direct campaign URL query check (e.g. ?campaign=cmp-wheel-01 or ?play=cmp-wheel-01)
-    // Special value "random" picks a random ACTIVE campaign (floating button on store site)
-    const params = new URLSearchParams(window.location.search);
-    const campParam = params.get('campaign') || params.get('play') || params.get('c');
-    
-    if (campParam) {
-      let targetCamp: Campaign | undefined;
-      if (campParam.toLowerCase() === 'random') {
-        // Random chance game: pick from active campaigns, fallback to any
-        const activeCamps = loadedCampaigns.filter(c => c.isActive);
-        const pool = activeCamps.length > 0 ? activeCamps : loadedCampaigns;
-        targetCamp = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
-      } else {
-        targetCamp = loadedCampaigns.find(c => c.id === campParam);
+    // Pull store settings from server (public) — so ALL browsers/devices see the same brand.
+    // Fallback to local when server has none yet (first deploy bootstrap).
+    fetchSettingsFromServer().then(serverSettings => {
+      if (serverSettings) {
+        setStoreSettings(serverSettings);
+        saveSettings(serverSettings); // sync local copy
       }
-      if (targetCamp) {
-        setCustomerCampaign(targetCamp);
+    });
+
+    // Pull campaigns from server (public) — same list for every browser/device.
+    fetchCampaignsFromServer().then(serverCampaigns => {
+      const effective = (serverCampaigns && serverCampaigns.length > 0) ? serverCampaigns : loadedCampaigns;
+      if (serverCampaigns && serverCampaigns.length > 0) {
+        setCampaigns(serverCampaigns);
+        saveCampaigns(serverCampaigns); // sync local copy
       } else if (loadedCampaigns.length > 0) {
-        // Fallback to first campaign if requested ID not found
-        setCustomerCampaign(loadedCampaigns[0]);
+        // Server has no campaigns yet (fresh Redis) — push local data up once (bootstrap)
+        const pw = getAdminPassword();
+        if (pw) saveCampaignsToServer(loadedCampaigns, pw);
       }
-    }
+
+      // Direct campaign URL query check (e.g. ?campaign=cmp-wheel-01 or ?play=cmp-wheel-01)
+      // Special value "random" picks a random ACTIVE campaign (floating button on store site)
+      const params = new URLSearchParams(window.location.search);
+      const campParam = params.get('campaign') || params.get('play') || params.get('c');
+
+      if (campParam) {
+        let targetCamp: Campaign | undefined;
+        if (campParam.toLowerCase() === 'random') {
+          const activeCamps = effective.filter(c => c.isActive);
+          const pool = activeCamps.length > 0 ? activeCamps : effective;
+          targetCamp = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+        } else {
+          targetCamp = effective.find(c => c.id === campParam);
+        }
+        if (targetCamp) {
+          setCustomerCampaign(targetCamp);
+        } else if (effective.length > 0) {
+          setCustomerCampaign(effective[0]);
+        }
+      }
+    });
   }, []);
 
   const handleSaveCampaign = (campaign: Campaign) => {
@@ -87,6 +108,9 @@ export default function App() {
 
     setCampaigns(updated);
     saveCampaigns(updated);
+    // Sync to server so every browser/device sees the same campaigns
+    const pw = getAdminPassword();
+    if (pw) saveCampaignsToServer(updated, pw);
     setEditingCampaign(null);
   };
 
@@ -94,6 +118,8 @@ export default function App() {
     const updated = campaigns.map(c => c.id === id ? { ...c, isActive: !c.isActive } : c);
     setCampaigns(updated);
     saveCampaigns(updated);
+    const pw = getAdminPassword();
+    if (pw) saveCampaignsToServer(updated, pw);
   };
 
   const handleDeleteCampaign = (id: string) => {
@@ -101,6 +127,8 @@ export default function App() {
       const updated = campaigns.filter(c => c.id !== id);
       setCampaigns(updated);
       saveCampaigns(updated);
+      const pw = getAdminPassword();
+      if (pw) saveCampaignsToServer(updated, pw);
     }
   };
 
@@ -115,6 +143,9 @@ export default function App() {
   const handleSaveSettings = (newSettings: StoreSettings) => {
     setStoreSettings(newSettings);
     saveSettings(newSettings);
+    // Sync to server so every browser/device sees the same store brand
+    const pw = getAdminPassword();
+    if (pw) saveSettingsToServer(newSettings, pw);
   };
 
   const handleReloadAllData = () => {
