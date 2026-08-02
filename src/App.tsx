@@ -46,11 +46,20 @@ export default function App() {
     setStoreSettings(loadedSettings);
 
     // Direct campaign URL query check (e.g. ?campaign=cmp-wheel-01 or ?play=cmp-wheel-01)
+    // Special value "random" picks a random ACTIVE campaign (floating button on store site)
     const params = new URLSearchParams(window.location.search);
     const campParam = params.get('campaign') || params.get('play') || params.get('c');
     
     if (campParam) {
-      const targetCamp = loadedCampaigns.find(c => c.id === campParam);
+      let targetCamp: Campaign | undefined;
+      if (campParam.toLowerCase() === 'random') {
+        // Random chance game: pick from active campaigns, fallback to any
+        const activeCamps = loadedCampaigns.filter(c => c.isActive);
+        const pool = activeCamps.length > 0 ? activeCamps : loadedCampaigns;
+        targetCamp = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : undefined;
+      } else {
+        targetCamp = loadedCampaigns.find(c => c.id === campParam);
+      }
       if (targetCamp) {
         setCustomerCampaign(targetCamp);
       } else if (loadedCampaigns.length > 0) {
