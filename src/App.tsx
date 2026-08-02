@@ -16,6 +16,7 @@ import { CampaignBuilder } from './components/CampaignBuilder';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { StoreSettingsView } from './components/StoreSettingsView';
 import { CustomerGamePage } from './components/CustomerGamePage';
+import { LandingPage } from './components/LandingPage';
 import { RenderDeployModal } from './components/RenderDeployModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
 
@@ -34,6 +35,7 @@ export default function App() {
 
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null | 'NEW'>(null);
   const [customerCampaign, setCustomerCampaign] = useState<Campaign | null>(null);
+  const [showLanding, setShowLanding] = useState(false); // plain site URL → game descriptions page
   const [showNetlifyModal, setShowNetlifyModal] = useState(false);
   const [isAdminAuthed, setIsAdminAuthed] = useState(false);
   const [isAdminRequested, setIsAdminRequested] = useState(false); // ?admin=1 → admin panel (locked)
@@ -106,9 +108,11 @@ export default function App() {
         } else if (effective.length > 0) {
           setCustomerCampaign(effective[0]);
         }
-      } else if (!(adminParam === '1' || adminParam === 'true') && effective.length > 0) {
-        // Plain site URL → customer game page (no admin lock screen!)
-        setCustomerCampaign(effective.find(c => c.isActive) || effective[0]);
+      } else if (!(adminParam === '1' || adminParam === 'true')) {
+        // Plain site URL → landing page with game descriptions (not a game directly)
+        if (effective.length > 0) {
+          setShowLanding(true);
+        }
       }
     });
   }, []);
@@ -172,7 +176,7 @@ export default function App() {
   };
 
   // Customer view: shown when a campaign is selected AND admin was NOT requested.
-  // Plain site URL (no params) → customer game page; ?admin=1 → admin panel.
+  // ?play=ID / ?play=random → game directly; plain URL → landing page; ?admin=1 → admin panel.
   if (customerCampaign && !isAdminRequested) {
     return (
       <CustomerGamePage
@@ -180,6 +184,19 @@ export default function App() {
         onGoToAdmin={() => {
           // Hidden path back to the admin panel (customer page has no visible button)
           window.location.href = window.location.pathname + '?admin=1';
+        }}
+      />
+    );
+  }
+
+  // Landing page: plain site URL — game descriptions + start button
+  if (showLanding && !isAdminRequested) {
+    return (
+      <LandingPage
+        campaigns={campaigns}
+        onStart={(camp) => {
+          setShowLanding(false);
+          setCustomerCampaign(camp);
         }}
       />
     );
