@@ -36,12 +36,19 @@ export default function App() {
   const [customerCampaign, setCustomerCampaign] = useState<Campaign | null>(null);
   const [showNetlifyModal, setShowNetlifyModal] = useState(false);
   const [isAdminAuthed, setIsAdminAuthed] = useState(false);
+  const [isAdminRequested, setIsAdminRequested] = useState(false); // ?admin=1 → admin panel (locked)
 
   // Load Initial Storage Data & Check URL Parameters
   useEffect(() => {
     const loadedCampaigns = getStoredCampaigns();
     const loadedLeads = getStoredLeads();
     const loadedSettings = getStoredSettings();
+
+    // ?admin=1 (or ?panel=1) opens the ADMIN panel (password required).
+    // Without it, the site is a pure customer page (no admin lock screen).
+    const params = new URLSearchParams(window.location.search);
+    const adminParam = params.get('admin') || params.get('panel');
+    setIsAdminRequested(adminParam === '1' || adminParam === 'true');
 
     setCampaigns(loadedCampaigns);
     setLeads(loadedLeads);
@@ -82,7 +89,7 @@ export default function App() {
 
       // Direct campaign URL query check (e.g. ?campaign=cmp-wheel-01 or ?play=cmp-wheel-01)
       // Special value "random" picks a random ACTIVE campaign (floating button on store site)
-      const params = new URLSearchParams(window.location.search);
+      // With NO query param at all (and not admin), show the FIRST active campaign as the landing page.
       const campParam = params.get('campaign') || params.get('play') || params.get('c');
 
       if (campParam) {
@@ -99,6 +106,9 @@ export default function App() {
         } else if (effective.length > 0) {
           setCustomerCampaign(effective[0]);
         }
+      } else if (!(adminParam === '1' || adminParam === 'true') && effective.length > 0) {
+        // Plain site URL → customer game page (no admin lock screen!)
+        setCustomerCampaign(effective.find(c => c.isActive) || effective[0]);
       }
     });
   }, []);
@@ -161,17 +171,15 @@ export default function App() {
     setStoreSettings(getStoredSettings());
   };
 
-  // If a customer opened a story link (or admin requested live preview), render ONLY CustomerGamePage
-  if (customerCampaign) {
+  // Customer view: shown when a campaign is selected AND admin was NOT requested.
+  // Plain site URL (no params) → customer game page; ?admin=1 → admin panel.
+  if (customerCampaign && !isAdminRequested) {
     return (
       <CustomerGamePage
         campaign={customerCampaign}
         onGoToAdmin={() => {
-          // Clear query params from browser URL and exit customer view
-          window.history.pushState({}, '', window.location.pathname);
-          setCustomerCampaign(null);
-          setLeads(getStoredLeads());
-          setCampaigns(getStoredCampaigns());
+          // Hidden path back to the admin panel (customer page has no visible button)
+          window.location.href = window.location.pathname + '?admin=1';
         }}
       />
     );
