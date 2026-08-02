@@ -1,7 +1,7 @@
 import { Campaign, PlayerLead, StoreSettings } from '../types';
 import { INITIAL_CAMPAIGNS, INITIAL_LEADS, INITIAL_STORE_SETTINGS } from '../data/mockData';
 
-const CAMPAIGNS_KEY = 'boostagram_campaigns_v1';
+const CAMPAIGNS_KEY = 'boostagram_campaigns_v2'; // v2: single ALL-games campaign (old multi-campaign list in v1 is ignored)
 const LEADS_KEY = 'boostagram_leads_v1';
 const SETTINGS_KEY = 'boostagram_settings_v1';
 const ADMIN_PASS_KEY = 'matinbazi_admin_pass_v1';
@@ -36,17 +36,6 @@ export function getStoredCampaigns(): Campaign[] {
       return INITIAL_CAMPAIGNS;
     }
     const campaigns = JSON.parse(data) as Campaign[];
-
-    // 🆕 Migration: ensure the ALL-games campaign exists (added in later versions).
-    // Users' existing stored campaigns are preserved; only the new "ALL" sample is appended.
-    if (!campaigns.some((c) => c.gameType === 'ALL')) {
-      const allCampaign = INITIAL_CAMPAIGNS.find((c) => c.gameType === 'ALL');
-      if (allCampaign) {
-        campaigns.push(allCampaign);
-        localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(campaigns));
-      }
-    }
-
     return campaigns;
   } catch (e) {
     console.error('Failed to parse stored campaigns', e);

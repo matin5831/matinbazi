@@ -12,7 +12,7 @@ import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldChec
 
 interface CustomerGamePageProps {
   campaign: Campaign;
-  onGoToAdmin?: () => void;
+  onGoToAdmin?: () => void; // kept for App.tsx compatibility (customer page no longer shows it)
 }
 
 export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, onGoToAdmin }) => {
@@ -693,14 +693,6 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
             v{APP_VERSION}
           </span>
         </div>
-        {onGoToAdmin && (
-          <button
-            onClick={onGoToAdmin}
-            className="text-slate-400 hover:text-slate-200 text-[10px] underline cursor-pointer"
-          >
-            ورود به مدیریت
-          </button>
-        )}
       </footer>
 
     </div>

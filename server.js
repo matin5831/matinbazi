@@ -164,6 +164,13 @@ app.put('/api/campaigns', async (req, res) => {
     }
     if (!Array.isArray(campaigns)) return res.status(400).json({ success: false, error: 'invalid_campaigns' });
     await kvSet(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+    // 🧹 Prune leads belonging to campaigns that no longer exist (e.g. old sample campaigns)
+    const validIds = new Set(campaigns.map((c) => c.id));
+    const allLeads = await getLeads();
+    const pruned = allLeads.filter((l) => validIds.has(l.campaignId));
+    if (pruned.length !== allLeads.length) {
+      await kvSet(LEADS_KEY, JSON.stringify(pruned));
+    }
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ success: false, error: 'server_error' });

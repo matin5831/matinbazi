@@ -67,12 +67,15 @@ export default function App() {
 
     // Pull campaigns from server (public) — same list for every browser/device.
     fetchCampaignsFromServer().then(serverCampaigns => {
-      const effective = (serverCampaigns && serverCampaigns.length > 0) ? serverCampaigns : loadedCampaigns;
-      if (serverCampaigns && serverCampaigns.length > 0) {
+      // Migration 1.1.1: the only valid list is the single ALL-games campaign.
+      // Old multi-campaign lists (server or local) are replaced with the new one.
+      const isNewFormat = serverCampaigns && serverCampaigns.length === 1 && serverCampaigns[0].gameType === 'ALL';
+      const effective = isNewFormat ? serverCampaigns : loadedCampaigns;
+      if (isNewFormat) {
         setCampaigns(serverCampaigns);
         saveCampaigns(serverCampaigns); // sync local copy
       } else if (loadedCampaigns.length > 0) {
-        // Server has no campaigns yet (fresh Redis) — push local data up once (bootstrap)
+        // Server list is old format or empty — push the new single-ALL list up
         const pw = getAdminPassword();
         if (pw) saveCampaignsToServer(loadedCampaigns, pw);
       }

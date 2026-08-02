@@ -13,11 +13,13 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
   wooCommerceConsumerSecret: '',
 };
 
+/** Only ONE campaign: the ALL-games campaign containing all 5 games.
+ *  Each user gets ONE play per campaign until the admin resets it. */
 export const INITIAL_CAMPAIGNS: Campaign[] = [
   {
     id: 'cmp-all-games-00',
     title: 'بازی و جایزه 🎮',
-    description: 'هر ۵ بازی شانس در یک کمپین — کاربر می‌تواند همه بازی‌ها را یک بار تجربه کند و شانس برنده شدن کد تخفیف داشته باشد',
+    description: 'هر ۵ بازی شانس در یک کمپین — کاربر یکی از بازی‌ها را انتخاب می‌کند و شانس برنده شدن کد تخفیف دارد',
     useDefaultStoreInfo: true,
     storeName: 'فروشگاه شیک‌پوشان',
     storeInstagram: 'shikpooshan_shop',
@@ -36,8 +38,8 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
     totalPlays: 0,
     totalWinners: 0,
     customHeadline: 'همه بازی‌ها را تجربه کنید! 🎮',
-    customSubheadline: 'هر بازی فقط یک بار — ۵ شانس برای برنده شدن کد تخفیف',
-    customTerms: 'هر آیدی اینستاگرام و شماره همراه فقط یک بار در هر بازی مجاز است.',
+    customSubheadline: 'یکی از ۵ بازی را انتخاب کنید — فقط یک شانس در این کمپین دارید',
+    customTerms: 'هر آیدی اینستاگرام و شماره همراه فقط یک بار مجاز به شرکت در این کمپین است.',
     prizes: [
       { id: 'p1', label: 'کد تخفیف ۵۰٪', subLabel: 'مخصوص خرید بالای ۵۰۰ هزار تومان', probability: 5, couponCode: 'OFF50-SHIK', discountPercent: 50, color: '#ec4899', isWin: true },
       { id: 'p2', label: 'کد تخفیف ۳۰٪', subLabel: 'روی تمام محصولات سایت', probability: 15, couponCode: 'OFF30-SPECIAL', discountPercent: 30, color: '#8b5cf6', isWin: true },
@@ -45,234 +47,8 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
       { id: 'p4', label: 'ارسال رایگان 🚚', subLabel: 'برای همه خریدهای این هفته', probability: 15, couponCode: 'FREE-DELIVERY', discountPercent: 100, color: '#3b82f6', isWin: true },
       { id: 'p5', label: 'پوچ! دوباره تلاش کن', subLabel: 'فرصت بعدی در بازی بعدی', probability: 40, couponCode: '', color: '#475569', isWin: false },
     ]
-  },
-  {
-    id: 'cmp-wheel-01',
-    title: 'گردونه شانس جادویی عیدانه 🎁',
-    description: 'گردونه شانس اختصاصی برای افزایش تعامل و جذب فالوور اینستاگرام و اهداء کدهای تخفیف تا ۵۰٪',
-    useDefaultStoreInfo: true,
-    storeName: 'فروشگاه شیک‌پوشان',
-    storeInstagram: 'shikpooshan_shop',
-    storeLogoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-    gameType: 'WHEEL',
-    themeColor: '#8b5cf6',
-    accentColor: '#ec4899',
-    bgGradient: 'from-purple-900 via-indigo-950 to-slate-950',
-    requireInstagramFollow: true,
-    requirePhoneNumber: true,
-    requireStoryMention: true,
-    maxSpinsPerUser: 1,
-    expiryDays: 7,
-    isActive: true,
-    createdAt: '1403/05/01',
-    totalPlays: 1420,
-    totalWinners: 1180,
-    customHeadline: 'چرخ بگردون، کد تخفیف جادویی برنده شو! 🎡',
-    customSubheadline: 'قبل از چرخاندن، پیج ما رو فالو کن و شماره همراهت رو وارد کن',
-    customTerms: 'کد تخفیف تا ۷ روز روی کلیه اجناس کالکشن جدید معتبر است.',
-    prizes: [
-      { id: 'p1', label: 'کد تخفیف ۵۰٪', subLabel: 'مخصوص خرید بالای ۵۰۰ هزار تومان', probability: 10, couponCode: 'OFF50-SHIK', discountPercent: 50, color: '#ec4899', isWin: true },
-      { id: 'p2', label: 'ارسال رایگان 🚚', subLabel: 'برای همه خریدهای این هفته', probability: 25, couponCode: 'FREE-DELIVERY', discountPercent: 100, color: '#3b82f6', isWin: true },
-      { id: 'p3', label: 'پوچ! دوباره تلاش کن', subLabel: 'فرصت بعدی فردا', probability: 15, couponCode: '', color: '#475569', isWin: false },
-      { id: 'p4', label: 'کد تخفیف ۳۰٪', subLabel: 'روی تمام محصولات سایت', probability: 20, couponCode: 'OFF30-SPECIAL', discountPercent: 30, color: '#8b5cf6', isWin: true },
-      { id: 'p5', label: 'کد تخفیف ۲۰٪', subLabel: 'هدیه اولین خرید', probability: 20, couponCode: 'WELCOME20', discountPercent: 20, color: '#10b981', isWin: true },
-      { id: 'p6', label: 'کارت هدیه ۱۰۰ هزار تومانی', subLabel: 'بدون محدودیت کف خرید', probability: 10, couponCode: 'GIFT100K', discountPercent: 0, color: '#f59e0b', isWin: true },
-    ]
-  },
-  {
-    id: 'cmp-scratch-02',
-    title: 'کارت شانس اسکرچ طلایی 🪙',
-    description: 'کارت خراشیدنی شانس آنلاین! مشتری با کشیدن انگشت برنده بن هدیه می‌شود',
-    useDefaultStoreInfo: false,
-    storeName: 'گالری آرایشی ماهور',
-    storeInstagram: 'mahoor_beauty',
-    storeLogoUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&auto=format&fit=crop&q=80',
-    gameType: 'SCRATCH',
-    themeColor: '#eab308',
-    accentColor: '#f97316',
-    bgGradient: 'from-amber-950 via-slate-900 to-amber-950',
-    requireInstagramFollow: true,
-    requirePhoneNumber: true,
-    requireStoryMention: false,
-    maxSpinsPerUser: 1,
-    expiryDays: 3,
-    isActive: true,
-    createdAt: '1403/05/10',
-    totalPlays: 890,
-    totalWinners: 720,
-    customHeadline: 'کارت شانس رو بکش و جایزه‌ت رو بردار! ✨',
-    customSubheadline: 'لایه روی کارت رو با دست یا ماوس پاک کن تا کد جایزه مشخص بشه',
-    customTerms: 'مهلت استفاده فقط ۷۲ ساعت از زمان برنده شدن.',
-    prizes: [
-      { id: 'sp1', label: 'پک هدیه رژ لب و ریمل 💄', subLabel: 'ارسال همراه خرید بعدی', probability: 15, couponCode: 'GIFT-COSMETIC', discountPercent: 100, color: '#ec4899', isWin: true },
-      { id: 'sp2', label: '۴۰٪ تخفیف محصولات پوست', subLabel: 'ویژه خریدهای آنلاین', probability: 35, couponCode: 'SKIN40', discountPercent: 40, color: '#eab308', isWin: true },
-      { id: 'sp3', label: 'کارت هدیه ۲۰۰ هزار تومانی', subLabel: 'برای خریدهای بالای ۱ میلیون', probability: 20, couponCode: 'MAHOOR200', discountPercent: 20, color: '#06b6d4', isWin: true },
-      { id: 'sp4', label: 'شانس مجدد! ⚡', subLabel: 'یک بار دیگه امتحان کن', probability: 30, couponCode: 'SCRATCH-AGAIN', discountPercent: 10, color: '#10b981', isWin: true },
-    ]
-  },
-  {
-    id: 'cmp-slot-03',
-    title: 'ماشین اسلات سه ردیفه شانس 🎰',
-    description: 'بازی جذاب اسلات ماشینی شبیه کازینو با صدا و انیمیشن بسیار هیجان‌انگیز',
-    useDefaultStoreInfo: true,
-    storeName: 'کافه آنلاین برگر کاپ',
-    storeInstagram: 'burgercup_tehran',
-    gameType: 'SLOT',
-    themeColor: '#ef4444',
-    accentColor: '#f59e0b',
-    bgGradient: 'from-red-950 via-slate-950 to-amber-950',
-    requireInstagramFollow: true,
-    requirePhoneNumber: true,
-    requireStoryMention: true,
-    maxSpinsPerUser: 2,
-    expiryDays: 5,
-    isActive: true,
-    createdAt: '1403/05/15',
-    totalPlays: 2150,
-    totalWinners: 1840,
-    customHeadline: 'اهرم اسلات رو بکش و برگر رایگان ببر! 🍔',
-    customSubheadline: 'اگه سه تا شکل مثل هم دربیاد برنده جایزه ویژه میشی!',
-    prizes: [
-      { id: 'slot1', label: 'یک پرس برگر دبل رایگان 🍔🍔', subLabel: 'سفارش حضوری یا آنلاین', probability: 20, couponCode: 'FREE-BURGER', discountPercent: 100, color: '#ef4444', isWin: true },
-      { id: 'slot2', label: 'سیب‌زمینی ویژه هدیه 🍟', subLabel: 'کنار هر سفارش غذا', probability: 40, couponCode: 'FREE-FRIES', discountPercent: 100, color: '#f59e0b', isWin: true },
-      { id: 'slot3', label: '۲۵٪ تخفیف کل فاکتور 🧾', subLabel: 'بدون محدودیت تعداد سفارش', probability: 40, couponCode: 'BURGER25', discountPercent: 25, color: '#10b981', isWin: true },
-    ]
-  },
-  {
-    id: 'cmp-quiz-04',
-    title: 'کوییز هوشمند و تست اطلاعات 🧠',
-    description: 'مسابقه سوال و جواب ۳ گزینه‌ای - پاسخ درست به سوالات برابر با جایزه تخفیف است',
-    useDefaultStoreInfo: true,
-    storeName: 'فروشگاه دیجی موبایل',
-    storeInstagram: 'digi_mobile_ir',
-    gameType: 'QUIZ',
-    themeColor: '#3b82f6',
-    accentColor: '#06b6d4',
-    bgGradient: 'from-blue-950 via-slate-900 to-indigo-950',
-    requireInstagramFollow: true,
-    requirePhoneNumber: true,
-    requireStoryMention: false,
-    maxSpinsPerUser: 1,
-    expiryDays: 10,
-    isActive: true,
-    createdAt: '1403/05/18',
-    totalPlays: 620,
-    totalWinners: 510,
-    customHeadline: 'به سوالات جواب بده و هندزفری هدیه بگیر! 🎧',
-    customSubheadline: '۳ سوال درباره برندهای موبایل - با پاسخ کامل کد جایزه بگیرید',
-    quizQuestions: [
-      {
-        id: 'q1',
-        question: 'جدیدترین سری گوشی‌های سامسونگ چه نام دارد؟',
-        options: ['Galaxy S24 Ultra', 'Galaxy Note 20', 'Galaxy A55'],
-        correctOptionIndex: 0
-      },
-      {
-        id: 'q2',
-        question: 'کدام استاندارد مقاومتی نشان‌دهنده ضدآب بودن کامل گوشی است؟',
-        options: ['IP54', 'IP68', 'IP42'],
-        correctOptionIndex: 1
-      },
-      {
-        id: 'q3',
-        question: 'شارژر سریع ۱۲۰ واتی بیشتر در کدام برند دیده می‌شود؟',
-        options: ['اپل', 'شیائومی', 'نوکیا'],
-        correctOptionIndex: 1
-      }
-    ],
-    prizes: [
-      { id: 'qp1', label: 'کد تخفیف ۱۵۰ هزار تومانی + قاب هدیه 📱', probability: 100, couponCode: 'QUIZ-WINNER-150K', discountPercent: 15, color: '#3b82f6', isWin: true }
-    ]
-  },
-  {
-    id: 'cmp-mystery-05',
-    title: 'جعبه شانس رازآلود 🎁',
-    description: 'انتخاب از بین ۳ جعبه کادو طلایی - هر جعبه حاوی یک سوپرایز ویژه است',
-    useDefaultStoreInfo: true,
-    storeName: 'مزون لوکس پاریس',
-    storeInstagram: 'mezon_paris_luxury',
-    gameType: 'MYSTERY_BOX',
-    themeColor: '#ec4899',
-    accentColor: '#a855f7',
-    bgGradient: 'from-fuchsia-950 via-slate-950 to-pink-950',
-    requireInstagramFollow: true,
-    requirePhoneNumber: true,
-    requireStoryMention: true,
-    maxSpinsPerUser: 1,
-    expiryDays: 5,
-    isActive: true,
-    createdAt: '1403/05/20',
-    totalPlays: 940,
-    totalWinners: 890,
-    customHeadline: 'یکی از جعبه‌های رازآلود رو باز کن! 🎁',
-    customSubheadline: 'هر جعبه شامل یک هدیه و کد تخفیف ویژه برای خرید لباس است',
-    prizes: [
-      { id: 'mb1', label: 'شال ابریشمی هدیه 🧣', subLabel: 'همراه سفارش بالای ۱ میلیون', probability: 30, couponCode: 'SILK-SCARF', discountPercent: 100, color: '#ec4899', isWin: true },
-      { id: 'mb2', label: 'کد تخفیف ۳۵٪ کالکشن تابستانه', subLabel: 'اعتبار ۵ روز', probability: 40, couponCode: 'SUMMER35', discountPercent: 35, color: '#a855f7', isWin: true },
-      { id: 'mb3', label: 'بن ۵۰۰ هزار تومانی خریدهای بالای ۲ میلیون', subLabel: 'ویژه لباس مجلسی', probability: 30, couponCode: 'PARIS500K', discountPercent: 25, color: '#f43f5e', isWin: true }
-    ]
   }
 ];
 
-export const INITIAL_LEADS: PlayerLead[] = [
-  {
-    id: 'lead-101',
-    campaignId: 'cmp-wheel-01',
-    campaignTitle: 'گردونه شانس جادویی عیدانه 🎁',
-    instagramHandle: 'ali_rezaei_14',
-    phoneNumber: '09123456789',
-    prizeWon: 'کد تخفیف ۵۰٪',
-    couponCode: 'OFF50-SHIK',
-    wonAt: '1403/05/22 - 14:30',
-    isRedeemed: true,
-    gameType: 'WHEEL'
-  },
-  {
-    id: 'lead-102',
-    campaignId: 'cmp-wheel-01',
-    campaignTitle: 'گردونه شانس جادویی عیدانه 🎁',
-    instagramHandle: 'sara_lifestyle',
-    phoneNumber: '09359876543',
-    prizeWon: 'ارسال رایگان 🚚',
-    couponCode: 'FREE-DELIVERY',
-    wonAt: '1403/05/22 - 15:12',
-    isRedeemed: false,
-    gameType: 'WHEEL'
-  },
-  {
-    id: 'lead-103',
-    campaignId: 'cmp-scratch-02',
-    campaignTitle: 'کارت شانس اسکرچ طلایی 🪙',
-    instagramHandle: 'mahsa_makeup_art',
-    phoneNumber: '09191112233',
-    prizeWon: 'پک هدیه رژ لب و ریمل 💄',
-    couponCode: 'GIFT-COSMETIC',
-    wonAt: '1403/05/22 - 16:05',
-    isRedeemed: true,
-    gameType: 'SCRATCH'
-  },
-  {
-    id: 'lead-104',
-    campaignId: 'cmp-slot-03',
-    campaignTitle: 'ماشین اسلات سه ردیفه شانس 🎰',
-    instagramHandle: 'amir_foodie_tehran',
-    phoneNumber: '09384445566',
-    prizeWon: 'یک پرس برگر دبل رایگان 🍔🍔',
-    couponCode: 'FREE-BURGER',
-    wonAt: '1403/05/22 - 17:40',
-    isRedeemed: false,
-    gameType: 'SLOT'
-  },
-  {
-    id: 'lead-105',
-    campaignId: 'cmp-quiz-04',
-    campaignTitle: 'کوییز هوشمند و تست اطلاعات 🧠',
-    instagramHandle: 'tech_lover_iran',
-    phoneNumber: '09107778899',
-    prizeWon: 'کد تخفیف ۱۵۰ هزار تومانی + قاب هدیه 📱',
-    couponCode: 'QUIZ-WINNER-150K',
-    wonAt: '1403/05/22 - 18:15',
-    isRedeemed: false,
-    gameType: 'QUIZ'
-  }
-];
+/** No sample leads — server (Redis) is authoritative. */
+export const INITIAL_LEADS: PlayerLead[] = [];
