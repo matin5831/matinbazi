@@ -35,7 +35,19 @@ export function getStoredCampaigns(): Campaign[] {
       localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(INITIAL_CAMPAIGNS));
       return INITIAL_CAMPAIGNS;
     }
-    return JSON.parse(data);
+    const campaigns = JSON.parse(data) as Campaign[];
+
+    // 🆕 Migration: ensure the ALL-games campaign exists (added in later versions).
+    // Users' existing stored campaigns are preserved; only the new "ALL" sample is appended.
+    if (!campaigns.some((c) => c.gameType === 'ALL')) {
+      const allCampaign = INITIAL_CAMPAIGNS.find((c) => c.gameType === 'ALL');
+      if (allCampaign) {
+        campaigns.push(allCampaign);
+        localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+      }
+    }
+
+    return campaigns;
   } catch (e) {
     console.error('Failed to parse stored campaigns', e);
     return INITIAL_CAMPAIGNS;
