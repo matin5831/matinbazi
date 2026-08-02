@@ -58,6 +58,10 @@ export default function App() {
       if (serverSettings) {
         setStoreSettings(serverSettings);
         saveSettings(serverSettings); // sync local copy
+      } else if (loadedSettings.storeName) {
+        // Server has no settings yet (fresh Redis) — push local settings up once (bootstrap)
+        const pw = getAdminPassword();
+        if (pw) saveSettingsToServer(loadedSettings, pw);
       }
     });
 
