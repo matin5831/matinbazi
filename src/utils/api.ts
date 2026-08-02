@@ -121,6 +121,7 @@ export async function checkAndGetLeads(): Promise<PlayerLead[]> {
 
 /**
  * Server-authoritative duplicate check BEFORE the user plays.
+ * When gameType is provided, checks per-game (for ALL-games campaigns).
  * Returns:
  *  - { duplicate: true }  → already played (block)
  *  - { duplicate: false } → OK to play
@@ -130,6 +131,7 @@ export async function checkDuplicateOnServer(payload: {
   campaignId: string;
   instagramHandle: string;
   phoneNumber: string;
+  gameType?: GameType;
 }): Promise<{ duplicate: boolean; offline?: boolean }> {
   const res = await fetchJson('/leads/check', {
     method: 'POST',

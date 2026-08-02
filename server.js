@@ -74,11 +74,13 @@ async function getLeads() {
   try { return JSON.parse(raw); } catch { return []; }
 }
 
-/** Check if a lead already exists for this campaign by IG or phone (server-side, bypass-proof) */
-async function findDuplicate(campaignId, cleanIg, cleanPhone) {
+/** Check if a lead already exists for this campaign by IG or phone (server-side, bypass-proof)
+ *  When gameType is provided, the check is per-game (for ALL-games campaigns). */
+async function findDuplicate(campaignId, cleanIg, cleanPhone, gameType) {
   const leads = await getLeads();
   return leads.some((l) => {
     if (l.campaignId !== campaignId) return false;
+    if (gameType && l.gameType && l.gameType !== gameType) return false;
     const lIg = normalizeIg(l.instagramHandle || '');
     const lPhone = normalizePhone(l.phoneNumber || '');
     const igMatch = cleanIg.length >= 3 && lIg.length >= 3 && cleanIg === lIg;
@@ -115,11 +117,11 @@ app.get('/api/leads', async (req, res) => {
 /** POST duplicate check — public, used before a customer starts a game */
 app.post('/api/leads/check', async (req, res) => {
   try {
-    const { campaignId, instagramHandle, phoneNumber } = req.body || {};
+    const { campaignId, instagramHandle, phoneNumber, gameType } = req.body || {};
     if (!campaignId) return res.status(400).json({ success: false, error: 'missing_campaign' });
     const cleanIg = normalizeIg(instagramHandle || '');
     const cleanPhone = normalizePhone(phoneNumber || '');
-    const duplicate = await findDuplicate(campaignId, cleanIg, cleanPhone);
+    const duplicate = await findDuplicate(campaignId, cleanIg, cleanPhone, gameType || null);
     res.json({ success: true, duplicate });
   } catch (e) {
     res.status(500).json({ success: false, error: 'server_error' });
@@ -136,7 +138,8 @@ app.post('/api/leads', async (req, res) => {
     const cleanPhone = normalizePhone(phoneNumber || '');
 
     // ⛔ Server-side duplicate check — cannot be bypassed by clearing browser storage
-    const isDuplicate = await findDuplicate(campaignId, cleanIg, cleanPhone);
+    // For ALL-games campaigns, check is per gameType (each game once per user)
+    const isDuplicate = await findDuplicate(campaignId, cleanIg, cleanPhone, gameType || null);
     if (isDuplicate) {
       return res.status(409).json({
         success: false,

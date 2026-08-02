@@ -1,6 +1,9 @@
 export const APP_VERSION = '1.1';
 
-export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'QUIZ' | 'MYSTERY_BOX';
+export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'QUIZ' | 'MYSTERY_BOX' | 'ALL';
+
+/** All playable game types (excluding the ALL hub container) */
+export const ALL_GAME_TYPES: GameType[] = ['WHEEL', 'SCRATCH', 'SLOT', 'QUIZ', 'MYSTERY_BOX'];
 
 export interface Prize {
   id: string;

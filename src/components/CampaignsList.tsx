@@ -32,6 +32,8 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
 
   const getGameBadge = (gameType: string) => {
     switch (gameType) {
+      case 'ALL':
+        return { label: 'همه بازی‌ها', icon: '🎮', color: 'bg-gradient-to-r from-amber-500/20 to-purple-500/20 text-amber-300 border-amber-500/40' };
       case 'WHEEL':
         return { label: 'گردونه شانس', icon: '🎡', color: 'bg-purple-500/20 text-purple-300 border-purple-500/40' };
       case 'SCRATCH':

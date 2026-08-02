@@ -84,7 +84,7 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
       accentColor: '#ec4899',
       bgGradient: 'from-purple-900 via-indigo-950 to-slate-950',
       prizes,
-      quizQuestions: gameType === 'QUIZ' ? quizQuestions : undefined,
+      quizQuestions: (gameType === 'QUIZ' || gameType === 'ALL') ? quizQuestions : undefined,
       requireInstagramFollow,
       requirePhoneNumber,
       requireStoryMention,
@@ -302,13 +302,14 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
           {/* Game Type Picker */}
           <div className="pt-2">
             <label className="block text-slate-300 font-bold mb-2">انتخاب بازی تعاملی:</label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {[
-                { type: 'WHEEL', label: 'گردونه شانس 🎡', icon: '🎡' },
-                { type: 'SCRATCH', label: 'کارت اسکرچ 🪙', icon: '🪙' },
-                { type: 'SLOT', label: 'ماشین اسلات 🎰', icon: '🎰' },
-                { type: 'QUIZ', label: 'کوییز و آزمون 🧠', icon: '🧠' },
-                { type: 'MYSTERY_BOX', label: 'جعبه شانس 🎁', icon: '🎁' },
+                { type: 'ALL', label: 'همه بازی‌ها 🎮', icon: '🎮', desc: '۵ بازی در یک کمپین' },
+                { type: 'WHEEL', label: 'گردونه شانس 🎡', icon: '🎡', desc: '' },
+                { type: 'SCRATCH', label: 'کارت اسکرچ 🪙', icon: '🪙', desc: '' },
+                { type: 'SLOT', label: 'ماشین اسلات 🎰', icon: '🎰', desc: '' },
+                { type: 'QUIZ', label: 'کوییز و آزمون 🧠', icon: '🧠', desc: '' },
+                { type: 'MYSTERY_BOX', label: 'جعبه شانس 🎁', icon: '🎁', desc: '' },
               ].map((gt) => (
                 <button
                   key={gt.type}
@@ -322,14 +323,15 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
                 >
                   <span className="text-xl block mb-1">{gt.icon}</span>
                   <span className="text-[11px]">{gt.label}</span>
+                  {gt.desc && <span className="text-[9px] text-slate-500 block mt-0.5">{gt.desc}</span>}
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Quiz Questions Editor (Visible only for QUIZ game type) */}
-        {gameType === 'QUIZ' && (
+        {/* Quiz Questions Editor (Visible for QUIZ and ALL game types) */}
+        {(gameType === 'QUIZ' || gameType === 'ALL') && (
           <div className="space-y-4 pt-4 border-t border-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>

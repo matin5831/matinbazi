@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Campaign, Prize, APP_VERSION } from '../types';
+import { Campaign, Prize, GameType, ALL_GAME_TYPES, APP_VERSION } from '../types';
 import { LuckyWheel } from './Games/LuckyWheel';
 import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
@@ -38,12 +38,69 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   const [instagramHandle, setInstagramHandle] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isInstagramFollowed, setIsInstagramFollowed] = useState(false);
-  const [step, setStep] = useState<'INPUT' | 'PLAY' | 'RESULT'>('INPUT');
+  const [step, setStep] = useState<'INPUT' | 'HUB' | 'PLAY' | 'RESULT'>('INPUT');
   const [wonPrize, setWonPrize] = useState<Prize | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
   const [inputError, setInputError] = useState('');
   const [wooStatusMessage, setWooStatusMessage] = useState<string | null>(null);
   const [sentToAdminCopied, setSentToAdminCopied] = useState(false);
+
+  // ALL-games campaign (hub) state
+  const isAllGames = campaign.gameType === 'ALL';
+  const [activeGame, setActiveGame] = useState<GameType>('WHEEL');
+  const [playedGames, setPlayedGames] = useState<Set<string>>(new Set());
+  const [hubLoading, setHubLoading] = useState(false);
+
+  const GAME_META: { type: GameType; label: string; icon: string; desc: string; color: string }[] = [
+    { type: 'WHEEL', label: 'گردونه شانس', icon: '🎡', desc: 'شانس خود را بچرخانید', color: 'text-amber-300 bg-amber-500/10 border-amber-500/30' },
+    { type: 'SCRATCH', label: 'کارت اسکرچ', icon: '🪙', desc: 'خط بکشید و جایزه بگیرید', color: 'text-orange-300 bg-orange-500/10 border-orange-500/30' },
+    { type: 'SLOT', label: 'ماشین اسلات', icon: '🎰', desc: 'سه نماد هم‌راستا', color: 'text-purple-300 bg-purple-500/10 border-purple-500/30' },
+    { type: 'QUIZ', label: 'کوییز و آزمون', icon: '🧠', desc: 'به سوالات پاسخ دهید', color: 'text-blue-300 bg-blue-500/10 border-blue-500/30' },
+    { type: 'MYSTERY_BOX', label: 'جعبه شانس', icon: '🎁', desc: 'یک جعبه باز کنید', color: 'text-rose-300 bg-rose-500/10 border-rose-500/30' },
+  ];
+
+  const refreshPlayedGames = async () => {
+    if (!isAllGames) return;
+    setHubLoading(true);
+    const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
+    const cleanPhone = phoneNumber.trim();
+    const results = await Promise.all(
+      ALL_GAME_TYPES.map(async (gt) => {
+        const res = await checkDuplicateOnServer({
+          campaignId: campaign.id,
+          instagramHandle: cleanIg,
+          phoneNumber: cleanPhone,
+          gameType: gt,
+        });
+        return { gt, played: res.duplicate };
+      })
+    );
+    setPlayedGames(new Set(results.filter(r => r.played).map(r => r.gt)));
+    setHubLoading(false);
+  };
+
+  const handleSelectGame = async (gt: GameType) => {
+    if (playedGames.has(gt)) {
+      setInputError('شما قبلاً این بازی را انجام داده‌اید. هر بازی فقط یک بار مجاز است!');
+      return;
+    }
+    const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
+    const cleanPhone = phoneNumber.trim();
+    const check = await checkDuplicateOnServer({
+      campaignId: campaign.id,
+      instagramHandle: cleanIg,
+      phoneNumber: cleanPhone,
+      gameType: gt,
+    });
+    if (check.duplicate) {
+      setInputError('شما قبلاً این بازی را انجام داده‌اید. هر بازی فقط یک بار مجاز است!');
+      setPlayedGames(prev => new Set(prev).add(gt));
+      return;
+    }
+    setActiveGame(gt);
+    setInputError('');
+    setStep('PLAY');
+  };
 
   const handleSendToAdmin = () => {
     const handleClean = instagramHandle.trim().replace(/^@/, '');
@@ -88,11 +145,19 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     const cleanIg = instagramHandle.trim().toLowerCase().replace(/^@/, '');
     const cleanPhone = normalizePhoneNumber(phoneNumber);
 
+    // ALL-games campaign: no pre-check here — each game is checked in the hub
+    if (isAllGames) {
+      setStep('HUB');
+      refreshPlayedGames();
+      return;
+    }
+
     // ⛔ Server-authoritative check (bypass-proof: clearing browser storage won't help)
     const serverCheck = await checkDuplicateOnServer({
       campaignId: campaign.id,
       instagramHandle: cleanIg,
       phoneNumber: cleanPhone,
+      gameType: campaign.gameType,
     });
 
     if (serverCheck.duplicate) {
@@ -127,6 +192,9 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   const handleGameFinish = async (prize: Prize) => {
     setWonPrize(prize);
 
+    // For ALL-games campaigns, record which game was played
+    const recordedGameType: GameType = isAllGames ? activeGame : campaign.gameType;
+
     // Save lead data — server-authoritative (Redis backend), local fallback for dev
     const serverRes = await addLeadToServer({
       campaignId: campaign.id,
@@ -135,13 +203,18 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
       phoneNumber: phoneNumber || 'ثبت نشده',
       prizeWon: prize.label,
       couponCode: prize.couponCode,
-      gameType: campaign.gameType,
+      gameType: recordedGameType,
     });
 
     if (serverRes.error === 'already_played') {
-      // Server rejected — user already played (shouldn't normally happen since we pre-check)
-      setInputError('شما قبلاً در این بازی شرکت کرده‌اید. هر آیدی و شماره فقط یک بار مجاز است.');
-      setStep('INPUT');
+      // Server rejected — user already played this game
+      setInputError('شما قبلاً این بازی را انجام داده‌اید. هر بازی فقط یک بار مجاز است.');
+      if (isAllGames) {
+        setPlayedGames(prev => new Set(prev).add(recordedGameType));
+        setStep('HUB');
+      } else {
+        setStep('INPUT');
+      }
       return;
     }
 
@@ -154,7 +227,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
         phoneNumber: phoneNumber || 'ثبت نشده',
         prizeWon: prize.label,
         couponCode: prize.couponCode,
-        gameType: campaign.gameType,
+        gameType: recordedGameType,
       });
     }
 
@@ -344,28 +417,102 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
             </div>
           )}
 
-          {/* STEP 2: GAME INTERACTION */}
+          {/* STEP 2: GAME HUB (ALL-games campaigns) */}
+          {step === 'HUB' && isAllGames && (
+            <div className="space-y-4">
+              <div className="text-center mb-2">
+                <span className="text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 inline-block">
+                  🎮 انتخاب بازی
+                </span>
+                <h3 className="text-base font-black text-white mt-2">
+                  {campaign.title}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  {hubLoading ? 'در حال بررسی بازی‌های انجام‌شده...' : 'هر بازی را فقط یک بار می‌توانید انجام دهید — بعد از هر بازی، شانس جدیدی دارید!'}
+                </p>
+              </div>
+
+              {inputError && (
+                <div className="bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs p-3 rounded-2xl text-center animate-shake">
+                  {inputError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                {GAME_META.map((gm) => {
+                  const isPlayed = playedGames.has(gm.type);
+                  return (
+                    <button
+                      key={gm.type}
+                      type="button"
+                      disabled={isPlayed || hubLoading}
+                      onClick={() => handleSelectGame(gm.type)}
+                      className={`relative p-4 rounded-2xl border text-center transition-all cursor-pointer ${
+                        isPlayed
+                          ? 'bg-slate-950/60 border-slate-800 opacity-50 cursor-not-allowed'
+                          : 'bg-slate-950 border-slate-800 hover:border-amber-400/60 hover:scale-[1.03] active:scale-95'
+                      }`}
+                    >
+                      <span className="text-3xl block mb-2">{gm.icon}</span>
+                      <span className={`text-xs font-black block ${isPlayed ? 'text-slate-500' : 'text-white'}`}>
+                        {gm.label}
+                      </span>
+                      <span className="text-[10px] text-slate-500 block mt-1">{gm.desc}</span>
+                      {isPlayed ? (
+                        <span className="absolute top-2 left-2 text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-bold">
+                          ✓ انجام شد
+                        </span>
+                      ) : (
+                        <span className={`absolute top-2 left-2 text-[10px] ${gm.color.split(' ')[0]} bg-slate-900 px-2 py-0.5 rounded-full font-bold`}>
+                          آماده
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="bg-amber-950/70 border border-amber-500/40 p-3 rounded-2xl text-[11px] text-amber-200 flex items-start gap-2.5 leading-relaxed">
+                <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-amber-300 block mb-0.5 font-black">قوانین:</strong>
+                  هر آیدی اینستاگرام و شماره همراه فقط یک بار مجاز به شرکت در هر بازی است. اطلاعات شما نزد {storeName} کاملاً محفوظ است.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: GAME INTERACTION */}
           {step === 'PLAY' && (
             <div className="space-y-4 text-center">
-              <div className="mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 inline-block">
                   شانس خود را امتحان کنید!
                 </span>
-                <h3 className="text-base font-bold text-white mt-2">
-                  {campaign.title}
-                </h3>
+                {isAllGames && (
+                  <button
+                    onClick={() => { setStep('HUB'); refreshPlayedGames(); }}
+                    className="text-[10px] text-slate-400 hover:text-amber-300 font-bold cursor-pointer transition-colors"
+                  >
+                    ← بازگشت به بازی‌ها
+                  </button>
+                )}
               </div>
+              <h3 className="text-base font-bold text-white mt-2">
+                {campaign.title}
+                {isAllGames && <span className="text-amber-400"> — {GAME_META.find(g => g.type === activeGame)?.label}</span>}
+              </h3>
 
-              {campaign.gameType === 'WHEEL' && (
+              {activeGame === 'WHEEL' && (
                 <LuckyWheel prizes={campaign.prizes} onFinish={handleGameFinish} />
               )}
-              {campaign.gameType === 'SCRATCH' && (
+              {activeGame === 'SCRATCH' && (
                 <ScratchCard prizes={campaign.prizes} onFinish={handleGameFinish} />
               )}
-              {campaign.gameType === 'SLOT' && (
+              {activeGame === 'SLOT' && (
                 <SlotMachine prizes={campaign.prizes} onFinish={handleGameFinish} />
               )}
-              {campaign.gameType === 'QUIZ' && (
+              {activeGame === 'QUIZ' && (
                 <QuizGame
                   questions={campaign.quizQuestions && campaign.quizQuestions.length > 0 ? campaign.quizQuestions : [
                     {
@@ -379,7 +526,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                   onFinish={handleGameFinish}
                 />
               )}
-              {campaign.gameType === 'MYSTERY_BOX' && (
+              {activeGame === 'MYSTERY_BOX' && (
                 <MysteryBox prizes={campaign.prizes} onFinish={handleGameFinish} />
               )}
             </div>
@@ -445,6 +592,16 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                   )}
 
                   <div className="pt-2 space-y-2">
+                    {/* Next game button (ALL-games campaign) */}
+                    {isAllGames && (
+                      <button
+                        onClick={() => { setWonPrize(null); setStep('HUB'); refreshPlayedGames(); }}
+                        className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-xl border border-purple-400/30 cursor-pointer active:scale-95"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>🎮 بازی بعدی — شانس جدید</span>
+                      </button>
+                    )}
                     {/* Direct Send to Admin Button */}
                     <button
                       onClick={handleSendToAdmin}
