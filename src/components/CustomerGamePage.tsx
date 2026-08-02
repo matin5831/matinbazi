@@ -8,6 +8,7 @@ import { MysteryBox } from './Games/MysteryBox';
 import { addLeadToServer, checkDuplicateOnServer } from '../utils/api';
 import { addLead, getStoredSettings, getStoredLeads, normalizePhoneNumber } from '../utils/storage';
 import { createWooCommerceCoupon } from '../utils/woocommerce';
+import { randomizeCoupon } from '../utils/coupon';
 import { Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, ShieldCheck, ArrowRight, ShoppingBag, Frown, AlertTriangle, Send, Clock } from 'lucide-react';
 
 interface CustomerGamePageProps {
@@ -184,7 +185,9 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   };
 
   const handleGameFinish = async (prize: Prize) => {
-    setWonPrize(prize);
+    // ⭐ Generate a fresh random 7-char coupon for this win (unique per win)
+    const finalPrize = randomizeCoupon(prize);
+    setWonPrize(finalPrize);
 
     // For ALL-games campaigns, record which game was played
     const recordedGameType: GameType = isAllGames ? activeGame : campaign.gameType;
@@ -195,8 +198,8 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
       campaignTitle: campaign.title,
       instagramHandle: instagramHandle.startsWith('@') ? instagramHandle : `@${instagramHandle}`,
       phoneNumber: phoneNumber || 'ثبت نشده',
-      prizeWon: prize.label,
-      couponCode: prize.couponCode,
+      prizeWon: finalPrize.label,
+      couponCode: finalPrize.couponCode || '',
       gameType: recordedGameType,
     });
 
@@ -219,20 +222,20 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
         campaignTitle: campaign.title,
         instagramHandle: instagramHandle.startsWith('@') ? instagramHandle : `@${instagramHandle}`,
         phoneNumber: phoneNumber || 'ثبت نشده',
-        prizeWon: prize.label,
-        couponCode: prize.couponCode,
+        prizeWon: finalPrize.label,
+        couponCode: finalPrize.couponCode || '',
         gameType: recordedGameType,
       });
     }
 
     // Auto sync coupon code to WooCommerce if enabled
-    if (prize.couponCode) {
+    if (finalPrize.couponCode) {
       const settings = getStoredSettings();
       if (settings.enableWooCommerce) {
         setWooStatusMessage('در حال ثبت کد تخفیف در فروشگاه ووکامرس...');
         const wooRes = await createWooCommerceCoupon(settings, {
-          code: prize.couponCode,
-          amount: prize.discountPercent || 10,
+          code: finalPrize.couponCode || '',
+          amount: finalPrize.discountPercent || 10,
           discountType: 'percent',
           description: `کد تخفیف کمپین ${campaign.title} برای کاربر ${instagramHandle || phoneNumber}`,
         });

@@ -153,11 +153,6 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({ prizes, onFinish, disa
               {wonPrize.subLabel}
             </p>
           )}
-          {wonPrize?.couponCode && (
-            <div className="mt-3 bg-amber-500/20 text-amber-300 text-xs px-3 py-1.5 rounded-lg border border-amber-500/40 font-mono tracking-widest font-bold">
-              کد: {wonPrize.couponCode}
-            </div>
-          )}
         </div>
 
         {/* Scratch Coating Canvas Layer */}
