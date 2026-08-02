@@ -293,6 +293,19 @@ app.post('/api/admin/reset-campaign', async (req, res) => {
   }
 });
 
+/** GET admin password status — public. Tells the login UI whether a password is already set.
+ *  Using the SERVER (not localStorage) is critical: incognito/cleared browsers have no local copy
+ *  but the password still exists server-side, so the modal must show "login", not "set password". */
+app.get('/api/admin/status', async (req, res) => {
+  try {
+    const salt = await kvGet(ADMIN_SALT_KEY);
+    const hash = await kvGet(ADMIN_PASS_KEY);
+    res.json({ success: true, set: !!(salt && hash) });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'server_error' });
+  }
+});
+
 /** Set admin password (first time only, then hashed & stored server-side) */
 app.post('/api/admin/set-password', async (req, res) => {
   try {

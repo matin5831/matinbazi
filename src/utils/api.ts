@@ -137,6 +137,13 @@ export async function resetCampaignOnServer(campaignId: string, password: string
   return { success: true, error: 'offline_fallback' };
 }
 
+/** Does the server have an admin password set? Returns true/false, or null when offline. */
+export async function checkAdminStatusFromServer(): Promise<boolean | null> {
+  const res = await fetchJson('/admin/status');
+  if (res.ok && typeof res.data?.set === 'boolean') return res.data.set;
+  return null;
+}
+
 /** Set admin password server-side (first time only) */
 export async function setAdminPasswordOnServer(password: string): Promise<boolean> {
   const res = await fetchJson('/admin/set-password', {

@@ -1,20 +1,37 @@
-import React, { useState } from 'react';
-import { KeyRound, Lock, ShieldCheck, Eye, EyeOff, Sparkles, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { KeyRound, Lock, ShieldCheck, Eye, EyeOff, Sparkles, ArrowLeft, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { getAdminPassword, setAdminPassword, verifyAdminPassword } from '../utils/storage';
-import { setAdminPasswordOnServer, verifyAdminPasswordOnServer } from '../utils/api';
+import { setAdminPasswordOnServer, verifyAdminPasswordOnServer, checkAdminStatusFromServer } from '../utils/api';
 
 interface AdminAuthModalProps {
   onSuccess: () => void;
 }
 
 export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => {
-  const existingPassword = getAdminPassword();
-  const isFirstTimeSetup = !existingPassword;
+  // "First time setup?" must come from the SERVER (authoritative), not localStorage.
+  // In incognito/cleared browsers localStorage is empty even though a password already
+  // exists server-side — local-only check would wrongly show "set password".
+  const [isFirstTimeSetup, setIsFirstTimeSetup] = useState<boolean | null>(null);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    checkAdminStatusFromServer().then((serverSet) => {
+      if (cancelled) return;
+      if (serverSet === true) {
+        setIsFirstTimeSetup(false);            // password exists on server → login
+      } else if (serverSet === false) {
+        setIsFirstTimeSetup(!getAdminPassword()); // none on server → setup (if local also empty)
+      } else {
+        setIsFirstTimeSetup(!getAdminPassword()); // offline → trust local storage
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +110,14 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
           </div>
         </div>
 
+        {/* Checking server status */}
+        {isFirstTimeSetup === null && (
+          <div className="flex items-center justify-center gap-2.5 text-xs text-slate-400 py-6">
+            <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
+            <span>در حال بررسی وضعیت پنل مدیریت...</span>
+          </div>
+        )}
+
         {/* Error Alert */}
         {error && (
           <div className="mb-4 bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs p-3 rounded-2xl flex items-center gap-2 animate-shake">
@@ -101,7 +126,8 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
           </div>
         )}
 
-        {/* Form */}
+        {/* Form — only when server status resolved */}
+        {isFirstTimeSetup !== null && (
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
             <label className="block text-slate-300 font-bold mb-1.5">
@@ -149,6 +175,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
             <span>{isFirstTimeSetup ? 'ثبت رمز عبور و ورود به داشبورد' : 'ورود به پنل مدیریت'}</span>
           </button>
         </form>
+        )}
 
         {/* Footer Security Badge */}
         <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-center gap-2 text-[11px] text-slate-500 text-center">
