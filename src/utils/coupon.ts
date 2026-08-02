@@ -23,10 +23,19 @@ export function generateCouponCode(): string {
 }
 
 /**
- * Replace a prize's static coupon with a fresh random one.
- * Prizes without a coupon (e.g. "پوچ", free-shipping-with-no-code) stay as-is.
+ * Replace a prize's coupon with the right behaviour:
+ *  - "پوچ" / non-win prizes  → NO coupon code at all (always cleared).
+ *  - Winning prizes (e.g. "ارسال رایگان", % discounts) → a fresh random 7-char code.
  */
 export function randomizeCoupon(prize: Prize): Prize {
-  if (!prize.couponCode) return prize;
+  const label = prize.label || '';
+  const isVoid = prize.isWin === false || /پوچ|متاسفانه|برنده نشدد/.test(label);
+
+  // No coupon for a loss — never generate one.
+  if (isVoid) {
+    return { ...prize, couponCode: '' };
+  }
+
+  // Every winning prize (discounts, free shipping, etc.) gets a unique random code.
   return { ...prize, couponCode: generateCouponCode() };
 }
