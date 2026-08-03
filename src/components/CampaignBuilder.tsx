@@ -92,6 +92,7 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
       expiryDays: 7,
       isActive: true,
       createdAt: initialCampaign?.createdAt || '1403/05/25',
+      updatedAt: Date.now(), // نسخه/زمان ذخیره — برای انتخاب جدیدترین کمپین
       totalPlays: initialCampaign?.totalPlays || 0,
       totalWinners: initialCampaign?.totalWinners || 0,
       customHeadline,

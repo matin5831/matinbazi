@@ -20,6 +20,21 @@ import { LandingPage } from './components/LandingPage';
 import { RenderDeployModal } from './components/RenderDeployModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
 
+/** ادغام کمپین‌های (محلی + سرور): برای هر آی‌دی، جدیدترین نسخه (بر اساس updatedAt) برنده می‌شود. */
+function mergeCampaigns(local: Campaign[], server: Campaign[]): Campaign[] {
+  const map = new Map<string, Campaign>();
+  for (const c of local) map.set(c.id, c);
+  for (const s of server) {
+    const l = map.get(s.id);
+    if (!l) {
+      map.set(s.id, s);
+    } else {
+      map.set(s.id, (l.updatedAt ?? 0) >= (s.updatedAt ?? 0) ? l : s);
+    }
+  }
+  return Array.from(map.values());
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'CAMPAIGNS' | 'ANALYTICS' | 'SETTINGS'>('CAMPAIGNS');
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -77,17 +92,18 @@ export default function App() {
 
     // Pull campaigns from server (public) — same list for every browser/device.
     fetchCampaignsFromServer().then(serverCampaigns => {
-      // Migration 1.1.1: the only valid list is the single ALL-games campaign.
-      // Old multi-campaign lists (server or local) are replaced with the new one.
-      const isNewFormat = serverCampaigns && serverCampaigns.length === 1 && serverCampaigns[0].gameType === 'ALL';
-      const effective = isNewFormat ? serverCampaigns : loadedCampaigns;
-      if (isNewFormat) {
-        setCampaigns(serverCampaigns);
-        saveCampaigns(serverCampaigns); // sync local copy
-      } else if (loadedCampaigns.length > 0) {
-        // Server list is old format or empty — push the new single-ALL list up
+      // جدیدترین نسخه هر کمپین (محلی یا سرور) با updatedAt مشخص می‌شود —
+      // اینطوری حتی اگر سرور لحظه‌ای عقب باشد، بازی همان ویرایشِ تازه می‌ماند.
+      const merged = mergeCampaigns(loadedCampaigns, serverCampaigns || []);
+      const effective = merged.length > 0 ? merged : loadedCampaigns;
+      if (merged.length > 0) {
+        setCampaigns(merged);
+        saveCampaigns(merged); // sync local copy
+        // اگر سرور خالی بود، لیست محلی را یک‌بار بالا بفرست
         const pw = getAdminPassword();
-        if (pw) saveCampaignsToServer(loadedCampaigns, pw);
+        if (pw && (!serverCampaigns || serverCampaigns.length === 0)) {
+          saveCampaignsToServer(merged, pw);
+        }
       }
 
       // Direct campaign URL query check (e.g. ?campaign=cmp-wheel-01 or ?play=cmp-wheel-01)
@@ -146,7 +162,7 @@ export default function App() {
   };
 
   const handleToggleActiveCampaign = (id: string) => {
-    const updated = campaigns.map(c => c.id === id ? { ...c, isActive: !c.isActive } : c);
+    const updated = campaigns.map(c => c.id === id ? { ...c, isActive: !c.isActive, updatedAt: Date.now() } : c);
     setCampaigns(updated);
     saveCampaigns(updated);
     const pw = getAdminPassword();

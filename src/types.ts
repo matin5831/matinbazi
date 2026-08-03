@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.2.5';
+export const APP_VERSION = '1.2.6';
 
 export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'QUIZ' | 'MYSTERY_BOX' | 'ALL';
 
@@ -46,6 +46,7 @@ export interface Campaign {
   expiryDays: number;
   isActive: boolean;
   createdAt: string;
+  updatedAt?: number;
   totalPlays: number;
   totalWinners: number;
   customHeadline?: string;
