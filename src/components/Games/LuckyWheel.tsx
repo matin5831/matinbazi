@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Prize } from '../../types';
 import confetti from 'canvas-confetti';
+import { pickPrizeIndexByProbability } from '../../utils/game';
 import { Play, Sparkles } from 'lucide-react';
 
 interface LuckyWheelProps {
@@ -23,18 +24,8 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({ prizes, onFinish, disabl
     setSpinning(true);
     setSelectedPrizeIndex(null);
 
-    // Pick winning prize based on probabilities
-    const randomVal = Math.random() * 100;
-    let accumulated = 0;
-    let winningIndex = 0;
-
-    for (let i = 0; i < prizes.length; i++) {
-      accumulated += prizes[i].probability;
-      if (randomVal <= accumulated) {
-        winningIndex = i;
-        break;
-      }
-    }
+    // Pick winning prize based on probabilities (normalized)
+    const winningIndex = pickPrizeIndexByProbability(prizes);
 
     // Calculate rotation angle
     // Note: slice 0 starts at angle 0. Pointer is usually at top (270deg or -90deg in SVG space)

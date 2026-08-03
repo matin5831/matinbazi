@@ -50,7 +50,7 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
       label: 'کد تخفیف جدید',
       subLabel: 'توضیح کوتاه جایزه',
       probability: 10,
-      couponCode: 'OFF-' + Math.floor(100 + Math.random() * 900),
+      couponCode: '', // کد به‌صورت خودکار و رندوم در بازی ساخته می‌شود
       discountPercent: 15,
       color: '#f59e0b',
       isWin: true
@@ -83,7 +83,7 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
       themeColor: '#8b5cf6',
       accentColor: '#ec4899',
       bgGradient: 'from-purple-900 via-indigo-950 to-slate-950',
-      prizes,
+      prizes: prizes.map(p => ({ ...p, couponCode: '' })), // کد دستی حذف — برنامه رندوم می‌سازد
       quizQuestions: (gameType === 'QUIZ' || gameType === 'ALL') ? quizQuestions : undefined,
       requireInstagramFollow,
       requirePhoneNumber,
@@ -525,21 +525,11 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="text-[10px] text-slate-400 block mb-0.5">کد تخفیف</label>
-                  <input
-                    type="text"
-                    value={p.couponCode}
-                    onChange={(e) => handleUpdatePrize(p.id, 'couponCode', e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-amber-300 font-mono text-left"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="text-[10px] text-slate-400 block mb-0.5">احتمال برد٪ (شبه وزن)</label>
+                <div className="md:col-span-3">
+                  <label className="text-[10px] text-slate-400 block mb-0.5">احتمال برد٪ (شانس)</label>
                   <input
                     type="number"
-                    min="1"
+                    min="0"
                     max="100"
                     value={p.probability}
                     onChange={(e) => handleUpdatePrize(p.id, 'probability', Number(e.target.value))}
@@ -547,7 +537,7 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
                   />
                 </div>
 
-                <div className="md:col-span-1 flex items-center gap-2">
+                <div className="md:col-span-2 flex items-center gap-2">
                   <input
                     type="color"
                     value={p.color}

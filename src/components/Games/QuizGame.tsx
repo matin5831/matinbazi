@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Prize, QuizQuestion } from '../../types';
 import confetti from 'canvas-confetti';
 import { HelpCircle, CheckCircle2, XCircle, Award, ArrowLeft } from 'lucide-react';
+import { pickPrizeByProbability } from '../../utils/game';
 
 interface QuizGameProps {
   questions: QuizQuestion[];
@@ -34,13 +35,14 @@ export const QuizGame: React.FC<QuizGameProps> = ({ questions, prizes, onFinish,
         setCurrentIdx(prev => prev + 1);
         setSelectedOption(null);
       } else {
-        // Quiz completed
+        // Quiz completed — award a prize BY PROBABILITY (like the other games)
         setQuizFinished(true);
-        const winPrize = prizes[0] || {
+        const picked = pickPrizeByProbability(prizes);
+        const winPrize = picked || {
           id: 'quiz-win',
           label: 'کد تخفیف ویژه برندگان کوییز',
           probability: 100,
-          couponCode: 'QUIZ-HERO',
+          couponCode: '',
           isWin: true,
           color: '#3b82f6'
         };

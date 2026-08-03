@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Prize } from '../../types';
 import confetti from 'canvas-confetti';
+import { pickPrizeIndexByProbability } from '../../utils/game';
 import { Gift, Sparkles } from 'lucide-react';
 
 interface MysteryBoxProps {
@@ -20,17 +21,8 @@ export const MysteryBox: React.FC<MysteryBoxProps> = ({ prizes, onFinish, disabl
     setSelectedBox(boxIdx);
 
     // Pick winning prize
-    const randomVal = Math.random() * 100;
-    let accumulated = 0;
-    let winningIndex = 0;
-
-    for (let i = 0; i < prizes.length; i++) {
-      accumulated += prizes[i].probability;
-      if (randomVal <= accumulated) {
-        winningIndex = i;
-        break;
-      }
-    }
+    // انتخاب جایزه بر اساس شانس (نرمال‌شده)
+    const winningIndex = pickPrizeIndexByProbability(prizes);
 
     const prize = prizes[winningIndex] || prizes[0];
 

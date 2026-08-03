@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Prize } from '../../types';
 import confetti from 'canvas-confetti';
+import { pickPrizeIndexByProbability } from '../../utils/game';
 import { Sparkles, Hand, Gift } from 'lucide-react';
 
 interface ScratchCardProps {
@@ -17,17 +18,8 @@ export const ScratchCard: React.FC<ScratchCardProps> = ({ prizes, onFinish, disa
 
   useEffect(() => {
     // Pick winning prize
-    const randomVal = Math.random() * 100;
-    let accumulated = 0;
-    let winningIndex = 0;
-
-    for (let i = 0; i < prizes.length; i++) {
-      accumulated += prizes[i].probability;
-      if (randomVal <= accumulated) {
-        winningIndex = i;
-        break;
-      }
-    }
+    // انتخاب جایزه بر اساس شانس (نرمال‌شده)
+    const winningIndex = pickPrizeIndexByProbability(prizes);
     const prize = prizes[winningIndex] || prizes[0];
     setWonPrize(prize);
 

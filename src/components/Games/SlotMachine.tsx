@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Prize } from '../../types';
 import confetti from 'canvas-confetti';
+import { pickPrizeIndexByProbability } from '../../utils/game';
 import { Sparkles, Trophy, RotateCcw } from 'lucide-react';
 
 interface SlotMachineProps {
@@ -23,17 +24,8 @@ export const SlotMachine: React.FC<SlotMachineProps> = ({ prizes, onFinish, disa
     setWonPrize(null);
 
     // Pick prize
-    const randomVal = Math.random() * 100;
-    let accumulated = 0;
-    let winningIndex = 0;
-
-    for (let i = 0; i < prizes.length; i++) {
-      accumulated += prizes[i].probability;
-      if (randomVal <= accumulated) {
-        winningIndex = i;
-        break;
-      }
-    }
+    // انتخاب جایزه بر اساس شانس (نرمال‌شده)
+    const winningIndex = pickPrizeIndexByProbability(prizes);
 
     const prize = prizes[winningIndex] || prizes[0];
 
