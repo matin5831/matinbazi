@@ -19,6 +19,7 @@ import { CustomerGamePage } from './components/CustomerGamePage';
 import { LandingPage } from './components/LandingPage';
 import { RenderDeployModal } from './components/RenderDeployModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
+import { INITIAL_CAMPAIGNS } from './data/mockData';
 
 /** ادغام کمپین‌های (محلی + سرور): برای هر آی‌دی، جدیدترین نسخه (بر اساس updatedAt) برنده می‌شود. */
 function mergeCampaigns(local: Campaign[], server: Campaign[]): Campaign[] {
@@ -98,18 +99,27 @@ export default function App() {
       const localAll = loadedCampaigns.filter((c: Campaign) => c.gameType === 'ALL');
 
       // جدیدترین نسخه همین کمپین ALL (محلی یا سرور) — با updatedAt مشخص می‌شود
-      const merged = mergeCampaigns(localAll, serverAll);
+      let merged = mergeCampaigns(localAll, serverAll);
+
+      // اگر هیچ کمپین ALL (۵ بازی) وجود نداشت — پیش‌فرض را بساز تا بازی‌ها هرگز حذف نشوند
+      let bootstrapped = false;
+      if (merged.length === 0) {
+        merged = INITIAL_CAMPAIGNS
+          .filter((c: Campaign) => c.gameType === 'ALL')
+          .map(c => ({ ...c, updatedAt: Date.now() }));
+        bootstrapped = true;
+      }
+
       const effective = merged.length > 0 ? merged : (localAll.length > 0 ? localAll : loadedCampaigns);
-      if (merged.length > 0 || localAll.length > 0) {
+      if (effective.length > 0) {
         setCampaigns(effective);
         saveCampaigns(effective);
-        // اگر سرور خالی یا قدیمی‌تر از نسخه‌ی محلی بود، لیست جدید را بالا بفرست
-        // تا سایر دستگاه‌ها هم ویرایشِ تازه (سوالات، درصدها) را ببینند.
+        // اگر سرور خالی، قدیمی‌تر یا هیچ ALL نداشت — لیست جدید را بالا بفرست
         const pw = getAdminPassword();
         const serverLen = (serverCampaigns || []).length;
         const serverAllJson = JSON.stringify(serverAll);
         const effectiveJson = JSON.stringify(effective);
-        const needsPush = serverLen === 0 || serverAllJson !== effectiveJson;
+        const needsPush = bootstrapped || serverLen === 0 || serverAllJson !== effectiveJson;
         if (pw && needsPush) {
           saveCampaignsToServer(effective, pw);
         }
