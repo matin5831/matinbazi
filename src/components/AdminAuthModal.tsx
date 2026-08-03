@@ -55,12 +55,15 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
       const serverResult = await verifyAdminPasswordOnServer(password);
       if (serverResult !== null) {
         if (serverResult.ok) {
+          // رمز را در localStorage هم ذخیره کن تا همگام‌سازی با سرور همیشه انجام شود
+          setAdminPassword(password);
           onSuccess();
         } else if (!serverResult.set) {
           // Server has no password yet (first deploy) — if local password matches,
           // register it on the server so admin APIs work
           if (verifyAdminPassword(password)) {
             await setAdminPasswordOnServer(password);
+            setAdminPassword(password);
             onSuccess();
           } else {
             setError('رمز عبور وارد شده اشتباه است!');
@@ -70,6 +73,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess }) => 
         }
       } else if (verifyAdminPassword(password)) {
         // Offline — sync to server if reachable later
+        setAdminPassword(password);
         await setAdminPasswordOnServer(password);
         onSuccess();
       } else {

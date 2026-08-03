@@ -103,9 +103,14 @@ export default function App() {
       if (merged.length > 0 || localAll.length > 0) {
         setCampaigns(effective);
         saveCampaigns(effective);
-        // اگر سرور خالی بود، لیست محلی را یک‌بار بالا بفرست
+        // اگر سرور خالی یا قدیمی‌تر از نسخه‌ی محلی بود، لیست جدید را بالا بفرست
+        // تا سایر دستگاه‌ها هم ویرایشِ تازه (سوالات، درصدها) را ببینند.
         const pw = getAdminPassword();
-        if (pw && (!serverCampaigns || serverCampaigns.length === 0)) {
+        const serverLen = (serverCampaigns || []).length;
+        const serverAllJson = JSON.stringify(serverAll);
+        const effectiveJson = JSON.stringify(effective);
+        const needsPush = serverLen === 0 || serverAllJson !== effectiveJson;
+        if (pw && needsPush) {
           saveCampaignsToServer(effective, pw);
         }
       }
