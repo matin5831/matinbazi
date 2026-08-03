@@ -92,17 +92,21 @@ export default function App() {
 
     // Pull campaigns from server (public) — same list for every browser/device.
     fetchCampaignsFromServer().then(serverCampaigns => {
-      // جدیدترین نسخه هر کمپین (محلی یا سرور) با updatedAt مشخص می‌شود —
-      // اینطوری حتی اگر سرور لحظه‌ای عقب باشد، بازی همان ویرایشِ تازه می‌ماند.
-      const merged = mergeCampaigns(loadedCampaigns, serverCampaigns || []);
-      const effective = merged.length > 0 ? merged : loadedCampaigns;
-      if (merged.length > 0) {
-        setCampaigns(merged);
-        saveCampaigns(merged); // sync local copy
+      // قاعده: تنها کمپینِ معتبر همان «ALL» (حاوی هر ۵ بازی) است.
+      // کمپین‌های قدیمی تک‌بازی (مثلاً فقط گردونه) حذف می‌شوند تا ۵ بازی همیشه در دسترس بماند.
+      const serverAll = (serverCampaigns || []).filter((c: Campaign) => c.gameType === 'ALL');
+      const localAll = loadedCampaigns.filter((c: Campaign) => c.gameType === 'ALL');
+
+      // جدیدترین نسخه همین کمپین ALL (محلی یا سرور) — با updatedAt مشخص می‌شود
+      const merged = mergeCampaigns(localAll, serverAll);
+      const effective = merged.length > 0 ? merged : (localAll.length > 0 ? localAll : loadedCampaigns);
+      if (merged.length > 0 || localAll.length > 0) {
+        setCampaigns(effective);
+        saveCampaigns(effective);
         // اگر سرور خالی بود، لیست محلی را یک‌بار بالا بفرست
         const pw = getAdminPassword();
         if (pw && (!serverCampaigns || serverCampaigns.length === 0)) {
-          saveCampaignsToServer(merged, pw);
+          saveCampaignsToServer(effective, pw);
         }
       }
 
