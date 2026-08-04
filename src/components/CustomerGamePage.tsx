@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Campaign, Prize, GameType, ALL_GAME_TYPES, APP_VERSION } from '../types';
+import React, { useEffect, useState } from 'react';
+import { Campaign, Prize, GameType, ALL_GAME_TYPES, APP_VERSION, QuizQuestion } from '../types';
 import { LuckyWheel } from './Games/LuckyWheel';
 import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
 import { QuizGame } from './Games/QuizGame';
 import { MysteryBox } from './Games/MysteryBox';
-import { addLeadToServer, checkDuplicateOnServer } from '../utils/api';
+import { addLeadToServer, checkDuplicateOnServer, fetchCampaignsFromServer } from '../utils/api';
 import { addLead, getStoredSettings, getStoredLeads, normalizePhoneNumber } from '../utils/storage';
 import { createWooCommerceCoupon } from '../utils/woocommerce';
 import { randomizeCoupon } from '../utils/coupon';
@@ -45,6 +45,31 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   const [inputError, setInputError] = useState('');
   const [wooStatusMessage, setWooStatusMessage] = useState<string | null>(null);
   const [sentToAdminCopied, setSentToAdminCopied] = useState(false);
+
+  // سوالات کوییز — همیشه زنده از سرور خوانده می‌شوند تا آخرین نسخه‌ی ویرایش ادمین دیده شود.
+  // (مرورگرهای دیگر ممکن است نسخه‌ی قدیمی کمپین را در حافظه‌ی محلی داشته باشند؛ سرور منبع حقیقت است.)
+  const [liveQuizQuestions, setLiveQuizQuestions] = useState<QuizQuestion[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchCampaignsFromServer()
+      .then((cs) => {
+        if (cancelled) return;
+        const allCamp = (cs || []).find((c: Campaign) => c.gameType === 'ALL');
+        const qq = allCamp?.quizQuestions;
+        if (qq && qq.length > 0) setLiveQuizQuestions(qq);
+      })
+      .catch(() => {
+        /* سرور در دسترس نیست — از کمپین محلی استفاده می‌شود */
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  // سوالات نهایی: زنده از سرور، وگرنه کمپین محلی، وگرنه خالی
+  const quizQuestions =
+    liveQuizQuestions && liveQuizQuestions.length > 0
+      ? liveQuizQuestions
+      : (campaign.quizQuestions && campaign.quizQuestions.length > 0 ? campaign.quizQuestions : []);
 
   // ALL-games campaign (hub) state
   const isAllGames = campaign.gameType === 'ALL';
@@ -519,9 +544,9 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 <SlotMachine prizes={campaign.prizes} onFinish={handleGameFinish} />
               )}
               {activeGame === 'QUIZ' && (
-                campaign.quizQuestions && campaign.quizQuestions.length > 0 ? (
+                quizQuestions.length > 0 ? (
                   <QuizGame
-                    questions={campaign.quizQuestions}
+                    questions={quizQuestions}
                     prizes={campaign.prizes}
                     onFinish={handleGameFinish}
                   />
