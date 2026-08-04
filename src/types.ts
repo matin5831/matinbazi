@@ -1,9 +1,9 @@
-export const APP_VERSION = '1.3.3';
+export const APP_VERSION = '1.3.4';
 
-export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'QUIZ' | 'MYSTERY_BOX' | 'ALL';
+export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'MYSTERY_BOX' | 'ALL';
 
 /** All playable game types (excluding the ALL hub container) */
-export const ALL_GAME_TYPES: GameType[] = ['WHEEL', 'SCRATCH', 'SLOT', 'QUIZ', 'MYSTERY_BOX'];
+export const ALL_GAME_TYPES: GameType[] = ['WHEEL', 'SCRATCH', 'SLOT', 'MYSTERY_BOX'];
 
 export interface Prize {
   id: string;
@@ -15,13 +15,6 @@ export interface Prize {
   color: string;
   isWin: boolean;
   remainingQuantity?: number;
-}
-
-export interface QuizQuestion {
-  id: string;
-  question: string;
-  options: string[];
-  correctOptionIndex: number;
 }
 
 export interface Campaign {
@@ -38,7 +31,6 @@ export interface Campaign {
   accentColor: string;
   bgGradient: string;
   prizes: Prize[];
-  quizQuestions?: QuizQuestion[];
   requireInstagramFollow: boolean;
   requirePhoneNumber: boolean;
   requireStoryMention: boolean;

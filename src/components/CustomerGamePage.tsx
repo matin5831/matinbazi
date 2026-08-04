@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Campaign, Prize, GameType, ALL_GAME_TYPES, APP_VERSION, QuizQuestion } from '../types';
+import React, { useState } from 'react';
+import { Campaign, Prize, GameType, ALL_GAME_TYPES, APP_VERSION } from '../types';
 import { LuckyWheel } from './Games/LuckyWheel';
 import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
-import { QuizGame } from './Games/QuizGame';
 import { MysteryBox } from './Games/MysteryBox';
-import { addLeadToServer, checkDuplicateOnServer, fetchCampaignsFromServer } from '../utils/api';
+import { addLeadToServer, checkDuplicateOnServer } from '../utils/api';
 import { addLead, getStoredSettings, getStoredLeads, normalizePhoneNumber } from '../utils/storage';
 import { createWooCommerceCoupon } from '../utils/woocommerce';
 import { randomizeCoupon } from '../utils/coupon';
@@ -46,31 +45,6 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
   const [wooStatusMessage, setWooStatusMessage] = useState<string | null>(null);
   const [sentToAdminCopied, setSentToAdminCopied] = useState(false);
 
-  // سوالات کوییز — همیشه زنده از سرور خوانده می‌شوند تا آخرین نسخه‌ی ویرایش ادمین دیده شود.
-  // (مرورگرهای دیگر ممکن است نسخه‌ی قدیمی کمپین را در حافظه‌ی محلی داشته باشند؛ سرور منبع حقیقت است.)
-  const [liveQuizQuestions, setLiveQuizQuestions] = useState<QuizQuestion[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchCampaignsFromServer()
-      .then((cs) => {
-        if (cancelled) return;
-        const allCamp = (cs || []).find((c: Campaign) => c.gameType === 'ALL');
-        const qq = allCamp?.quizQuestions;
-        if (qq && qq.length > 0) setLiveQuizQuestions(qq);
-      })
-      .catch(() => {
-        /* سرور در دسترس نیست — از کمپین محلی استفاده می‌شود */
-      });
-    return () => { cancelled = true; };
-  }, []);
-
-  // سوالات نهایی: زنده از سرور، وگرنه کمپین محلی، وگرنه خالی
-  const quizQuestions =
-    liveQuizQuestions && liveQuizQuestions.length > 0
-      ? liveQuizQuestions
-      : (campaign.quizQuestions && campaign.quizQuestions.length > 0 ? campaign.quizQuestions : []);
-
   // ALL-games campaign (hub) state
   const isAllGames = campaign.gameType === 'ALL';
   const [activeGame, setActiveGame] = useState<GameType>('WHEEL');
@@ -81,7 +55,6 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     { type: 'WHEEL', label: 'گردونه شانس', icon: '🎡', desc: 'شانس خود را بچرخانید', color: 'text-amber-600 bg-amber-100 border-amber-300' },
     { type: 'SCRATCH', label: 'کارت اسکرچ', icon: '🪙', desc: 'خط بکشید و جایزه بگیرید', color: 'text-orange-300 bg-orange-500/10 border-orange-500/30' },
     { type: 'SLOT', label: 'ماشین اسلات', icon: '🎰', desc: 'سه نماد هم‌راستا', color: 'text-purple-700 bg-purple-500/10 border-purple-500/30' },
-    { type: 'QUIZ', label: 'کوییز و آزمون', icon: '🧠', desc: 'به سوالات پاسخ دهید', color: 'text-blue-300 bg-blue-500/10 border-blue-500/30' },
     { type: 'MYSTERY_BOX', label: 'جعبه شانس', icon: '🎁', desc: 'یک جعبه باز کنید', color: 'text-rose-600 bg-rose-500/10 border-rose-500/30' },
   ];
 
@@ -542,20 +515,6 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
               )}
               {activeGame === 'SLOT' && (
                 <SlotMachine prizes={campaign.prizes} onFinish={handleGameFinish} />
-              )}
-              {activeGame === 'QUIZ' && (
-                quizQuestions.length > 0 ? (
-                  <QuizGame
-                    questions={quizQuestions}
-                    prizes={campaign.prizes}
-                    onFinish={handleGameFinish}
-                  />
-                ) : (
-                  <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-6 text-center">
-                    <p className="text-amber-300 font-bold mb-2">🎯 سوال کوییز هنوز تعریف نشده است</p>
-                    <p className="text-sm text-slate-300">مدیر فروشگاه باید ابتدا از بخش «ویرایش کمپین» یک سوال اضافه کند.</p>
-                  </div>
-                )
               )}
               {activeGame === 'MYSTERY_BOX' && (
                 <MysteryBox prizes={campaign.prizes} onFinish={handleGameFinish} />

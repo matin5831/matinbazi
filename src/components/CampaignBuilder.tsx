@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Campaign, GameType, Prize, QuizQuestion } from '../types';
+import { Campaign, GameType, Prize } from '../types';
 import { Save, ArrowRight, Plus, Trash2, Sparkles, Sliders, Palette, ShieldAlert, Gift, HelpCircle, Store, Globe, Info } from 'lucide-react';
 
 interface CampaignBuilderProps {
@@ -35,8 +35,14 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
     { id: 'p-5', label: 'کد تخفیف ۲۰٪', subLabel: 'هدیه ورود', probability: 20, couponCode: 'WELCOME20', discountPercent: 20, color: '#10b981', isWin: true },
   ]);
 
-  // بخش سوالات کوییز — از ابتدا خالی؛ ادمین خودش سوال می‌نویسد
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(initialCampaign?.quizQuestions || []);
+  const handleRemovePrize = (id: string) => {
+    if (prizes.length <= 2) return;
+    setPrizes(prizes.filter(p => p.id !== id));
+  };
+
+  const handleUpdatePrize = (id: string, field: keyof Prize, value: any) => {
+    setPrizes(prizes.map(p => p.id === id ? { ...p, [field]: value } : p));
+  };
 
   const handleAddPrize = () => {
     const newP: Prize = {
@@ -50,15 +56,6 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
       isWin: true
     };
     setPrizes([...prizes, newP]);
-  };
-
-  const handleRemovePrize = (id: string) => {
-    if (prizes.length <= 2) return;
-    setPrizes(prizes.filter(p => p.id !== id));
-  };
-
-  const handleUpdatePrize = (id: string, field: keyof Prize, value: any) => {
-    setPrizes(prizes.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -78,7 +75,6 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
       accentColor: '#ec4899',
       bgGradient: 'from-purple-900 via-indigo-950 to-slate-950',
       prizes: prizes.map(p => ({ ...p, couponCode: '' })), // کد دستی حذف — برنامه رندوم می‌سازد
-      quizQuestions: (gameType === 'QUIZ' || gameType === 'ALL') ? quizQuestions : undefined,
       requireInstagramFollow,
       requirePhoneNumber,
       requireStoryMention,
@@ -299,11 +295,10 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
             <label className="block text-slate-300 font-bold mb-2">انتخاب بازی تعاملی:</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {[
-                { type: 'ALL', label: 'همه بازی‌ها 🎮', icon: '🎮', desc: '۵ بازی در یک کمپین' },
+                { type: 'ALL', label: 'همه بازی‌ها 🎮', icon: '🎮', desc: '۴ بازی در یک کمپین' },
                 { type: 'WHEEL', label: 'گردونه شانس 🎡', icon: '🎡', desc: '' },
                 { type: 'SCRATCH', label: 'کارت اسکرچ 🪙', icon: '🪙', desc: '' },
                 { type: 'SLOT', label: 'ماشین اسلات 🎰', icon: '🎰', desc: '' },
-                { type: 'QUIZ', label: 'کوییز و آزمون 🧠', icon: '🧠', desc: '' },
                 { type: 'MYSTERY_BOX', label: 'جعبه شانس 🎁', icon: '🎁', desc: '' },
               ].map((gt) => (
                 <button
@@ -324,161 +319,6 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
             </div>
           </div>
         </div>
-
-        {/* Quiz Questions Editor (Visible for QUIZ and ALL game types) */}
-        {(gameType === 'QUIZ' || gameType === 'ALL') && (
-          <div className="space-y-4 pt-4 border-t border-slate-800">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h3 className="text-sm font-bold text-blue-400 flex items-center gap-2">
-                  <HelpCircle className="w-4 h-4" />
-                  <span>طراحی و سوالات مسابقه و کوییز</span>
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  سوالات، گزینه‌ها و گزینه پاسخ صحیح را برای شرکت‌کنندگان طراحی و ویرایش کنید.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const newQ: QuizQuestion = {
-                    id: 'q-' + Date.now(),
-                    question: 'سوال جدید را وارد کنید',
-                    options: ['گزینه ۱', 'گزینه ۲', 'گزینه ۳'],
-                    correctOptionIndex: 0
-                  };
-                  setQuizQuestions([...quizQuestions, newQ]);
-                }}
-                className="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-xl flex items-center justify-center gap-1.5 font-bold text-xs transition-colors cursor-pointer shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>افزودن سوال جدید</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {quizQuestions.map((q, qIdx) => (
-                <div key={q.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
-                      سوال شماره {qIdx + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (quizQuestions.length <= 1) {
-                          alert('کمپین کوییز باید حداقل شامل یک سوال باشد.');
-                          return;
-                        }
-                        setQuizQuestions(quizQuestions.filter(item => item.id !== q.id));
-                      }}
-                      className="p-1.5 text-rose-400 hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-[11px]"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>حذف سوال</span>
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-300 block mb-1">صورت سوال:</label>
-                    <input
-                      type="text"
-                      value={q.question}
-                      onChange={(e) => {
-                        const updated = quizQuestions.map(item => item.id === q.id ? { ...item, question: e.target.value } : item);
-                        setQuizQuestions(updated);
-                      }}
-                      placeholder="مثلا: ارسال رایگان خریدهای بالای چه مبلغی است؟"
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-medium text-xs focus:border-amber-400 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-[11px] font-bold text-slate-300">گزینه‌های پاسخ (گزینه صحیح را مشخص کنید):</label>
-                      {q.options.length < 5 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = quizQuestions.map(item => {
-                              if (item.id !== q.id) return item;
-                              return { ...item, options: [...item.options, `گزینه ${item.options.length + 1}`] };
-                            });
-                            setQuizQuestions(updated);
-                          }}
-                          className="text-[11px] text-amber-300 hover:underline flex items-center gap-1 font-bold"
-                        >
-                          <Plus className="w-3.5 h-3.5" /> افزودن گزینه
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      {q.options.map((opt, optIdx) => {
-                        const isCorrect = q.correctOptionIndex === optIdx;
-                        return (
-                          <div key={optIdx} className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = quizQuestions.map(item => item.id === q.id ? { ...item, correctOptionIndex: optIdx } : item);
-                                setQuizQuestions(updated);
-                              }}
-                              className={`px-3 py-2 rounded-xl border text-[11px] font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
-                                isCorrect
-                                  ? 'bg-emerald-500/20 border-emerald-500/60 text-emerald-300 shadow-sm'
-                                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                              }`}
-                              title="برای تغییر پاسخ درست روی این دکمه کلیک کنید"
-                            >
-                              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isCorrect ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
-                              <span>{isCorrect ? 'پاسخ صحیح ✓' : 'انتخاب به عنوان پاسخ درست'}</span>
-                            </button>
-
-                            <input
-                              type="text"
-                              value={opt}
-                              onChange={(e) => {
-                                const updated = quizQuestions.map(item => {
-                                  if (item.id !== q.id) return item;
-                                  const newOpts = [...item.options];
-                                  newOpts[optIdx] = e.target.value;
-                                  return { ...item, options: newOpts };
-                                });
-                                setQuizQuestions(updated);
-                              }}
-                              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-amber-400 focus:outline-none"
-                            />
-
-                            {q.options.length > 2 && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = quizQuestions.map(item => {
-                                    if (item.id !== q.id) return item;
-                                    const newOpts = item.options.filter((_, i) => i !== optIdx);
-                                    let newCorrect = item.correctOptionIndex;
-                                    if (newCorrect >= newOpts.length) newCorrect = newOpts.length - 1;
-                                    return { ...item, options: newOpts, correctOptionIndex: newCorrect };
-                                  });
-                                  setQuizQuestions(updated);
-                                }}
-                                className="p-2 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
-                                title="حذف گزینه"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Section 2: Prizes Configuration */}
         <div className="space-y-4 pt-4 border-t border-slate-800">

@@ -40,8 +40,6 @@ export const CampaignsList: React.FC<CampaignsListProps> = ({
         return { label: 'کارت اسکرچ', icon: '🪙', color: 'bg-amber-500/20 text-amber-300 border-amber-500/40' };
       case 'SLOT':
         return { label: 'ماشین اسلات', icon: '🎰', color: 'bg-red-500/20 text-red-300 border-red-500/40' };
-      case 'QUIZ':
-        return { label: 'کوییز و مسابقه', icon: '🧠', color: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
       case 'MYSTERY_BOX':
         return { label: 'جعبه شانس', icon: '🎁', color: 'bg-pink-500/20 text-pink-300 border-pink-500/40' };
       default:

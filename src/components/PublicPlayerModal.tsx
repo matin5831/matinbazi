@@ -3,7 +3,6 @@ import { Campaign, Prize } from '../types';
 import { LuckyWheel } from './Games/LuckyWheel';
 import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
-import { QuizGame } from './Games/QuizGame';
 import { MysteryBox } from './Games/MysteryBox';
 import { addLead, normalizePhoneNumber } from '../utils/storage';
 import { X, Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, Lock, ShieldCheck } from 'lucide-react';
@@ -202,13 +201,6 @@ export const PublicPlayerModal: React.FC<PublicPlayerModalProps> = ({ campaign, 
               )}
               {campaign.gameType === 'SLOT' && (
                 <SlotMachine prizes={campaign.prizes} onFinish={handleGameFinish} />
-              )}
-              {campaign.gameType === 'QUIZ' && (
-                <QuizGame
-                  questions={campaign.quizQuestions || []}
-                  prizes={campaign.prizes}
-                  onFinish={handleGameFinish}
-                />
               )}
               {campaign.gameType === 'MYSTERY_BOX' && (
                 <MysteryBox prizes={campaign.prizes} onFinish={handleGameFinish} />
