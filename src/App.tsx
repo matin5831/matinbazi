@@ -55,6 +55,8 @@ export default function App() {
   const [routeResolved, setRouteResolved] = useState(false); // blank until the landing/customer/admin route is decided
   const [showNetlifyModal, setShowNetlifyModal] = useState(false);
   const [isAdminAuthed, setIsAdminAuthed] = useState(false);
+  // ویرایشی که بدون رمز ذخیره شد — بعد از ورود موفق ادمین به سرور فرستاده می‌شود
+  const [pendingServerSync, setPendingServerSync] = useState<Campaign[] | null>(null);
   const [isAdminRequested, setIsAdminRequested] = useState(false); // ?admin=1 → admin panel (locked)
 
   // Load Initial Storage Data & Check URL Parameters
@@ -102,11 +104,12 @@ export default function App() {
       let merged = mergeCampaigns(localAll, serverAll);
 
       // اگر هیچ کمپین ALL (۵ بازی) وجود نداشت — پیش‌فرض را بساز تا بازی‌ها هرگز حذف نشوند
+      // ⚠️ updatedAt: 0 — نسخه‌ی پیش‌فرض باید «قدیمی‌ترین» باشد تا نسخه‌ی واقعیِ ادمین (با سوالات کوییز و جایزه‌ها) همیشه برنده شود
       let bootstrapped = false;
       if (merged.length === 0) {
         merged = INITIAL_CAMPAIGNS
           .filter((c: Campaign) => c.gameType === 'ALL')
-          .map(c => ({ ...c, updatedAt: Date.now() }));
+          .map(c => ({ ...c, updatedAt: 0 }));
         bootstrapped = true;
       }
 
@@ -176,7 +179,14 @@ export default function App() {
     saveCampaigns(updated);
     // Sync to server so every browser/device sees the same campaigns
     const pw = getAdminPassword();
-    if (pw) saveCampaignsToServer(updated, pw);
+    if (pw) {
+      saveCampaignsToServer(updated, pw);
+      setPendingServerSync(null);
+    } else {
+      // رمز ادمین در این مرورگر ذخیره نشده — ویرایش فقط محلی است.
+      // بعد از ورود موفق ادمین، به‌صورت خودکار به سرور فرستاده می‌شود.
+      setPendingServerSync(updated);
+    }
     setEditingCampaign(null);
   };
 
@@ -260,7 +270,17 @@ export default function App() {
       
       {/* Admin Authentication Lock Screen */}
       {!isAdminAuthed && (
-        <AdminAuthModal onSuccess={() => setIsAdminAuthed(true)} />
+        <AdminAuthModal onSuccess={() => {
+          setIsAdminAuthed(true);
+          // اگر ویرایشی قبل از ورود ذخیره شده بود (بدون رمز)، حالا به سرور فرستاده می‌شود
+          if (pendingServerSync) {
+            const pw = getAdminPassword();
+            if (pw) {
+              saveCampaignsToServer(pendingServerSync, pw);
+              setPendingServerSync(null);
+            }
+          }
+        }} />
       )}
 
       {/* Header Bar */}

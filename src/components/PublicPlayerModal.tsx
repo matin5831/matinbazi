@@ -5,7 +5,7 @@ import { ScratchCard } from './Games/ScratchCard';
 import { SlotMachine } from './Games/SlotMachine';
 import { QuizGame } from './Games/QuizGame';
 import { MysteryBox } from './Games/MysteryBox';
-import { addLead } from '../utils/storage';
+import { addLead, normalizePhoneNumber } from '../utils/storage';
 import { X, Instagram, Phone, Sparkles, Copy, Check, ExternalLink, Gift, Lock, ShieldCheck } from 'lucide-react';
 
 interface PublicPlayerModalProps {
@@ -32,8 +32,9 @@ export const PublicPlayerModal: React.FC<PublicPlayerModalProps> = ({ campaign, 
     }
 
     if (campaign.requirePhoneNumber) {
-      if (!phoneNumber.trim() || phoneNumber.length < 10) {
-        setInputError('لطفا شماره همراه معتبر (مثلا 09123456789) وارد کنید.');
+      const cleanPhone = normalizePhoneNumber(phoneNumber);
+      if (!/^09\d{9}$/.test(cleanPhone)) {
+        setInputError('شماره همراه باید با 09 شروع شود و دقیقاً ۱۱ رقم باشد (مثلا 09123456789).');
         return;
       }
     }

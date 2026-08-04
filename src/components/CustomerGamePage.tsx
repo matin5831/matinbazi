@@ -129,8 +129,9 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
     }
 
     if (campaign.requirePhoneNumber) {
-      if (!phoneNumber.trim() || phoneNumber.length < 10) {
-        setInputError('لطفا شماره همراه معتبر (مثلا 09123456789) وارد کنید.');
+      const cleanPhone = normalizePhoneNumber(phoneNumber);
+      if (!/^09\d{9}$/.test(cleanPhone)) {
+        setInputError('شماره همراه باید با 09 شروع شود و دقیقاً ۱۱ رقم باشد (مثلا 09123456789).');
         return;
       }
     }
