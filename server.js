@@ -370,9 +370,20 @@ if (!fs.existsSync(indexPath)) {
   console.error('[MatinBazi] ⚠️ dist/index.html NOT FOUND — build command likely not run (Render sets "bun install" by default).');
   console.error('[MatinBazi] Fix: Service Settings → Build & Deploy → Build Command → "npm run build" → redeploy.');
 }
-app.use(express.static(distDir));
+// index.html همیشه تازه سرو می‌شود (no-cache) تا مرورگرها نسخه‌ی جدید برنامه را بگیرند.
+// فایل‌های assets (دارای هش) کش طولانی می‌شوند چون نامشان با هر بیلد عوض می‌شود.
+app.use(express.static(distDir, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 app.get(/^(?!\/api\/).*/, (req, res) => {
   if (fs.existsSync(indexPath)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(indexPath);
   } else {
     res.status(503).send(
