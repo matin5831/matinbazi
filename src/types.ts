@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.3.4';
+export const APP_VERSION = '1.3.5';
 
 export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'MYSTERY_BOX' | 'ALL';
 
