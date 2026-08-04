@@ -46,14 +46,6 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
       { id: 'p3', label: 'کد تخفیف ۲۰٪', subLabel: 'هدیه اولین خرید', probability: 25, couponCode: 'WELCOME20', discountPercent: 20, color: '#10b981', isWin: true },
       { id: 'p4', label: 'ارسال رایگان 🚚', subLabel: 'برای همه خریدهای این هفته', probability: 15, couponCode: 'FREE-DELIVERY', discountPercent: 100, color: '#3b82f6', isWin: true },
       { id: 'p5', label: 'پوچ! دوباره تلاش کن', subLabel: 'فرصت بعدی در بازی بعدی', probability: 40, couponCode: '', color: '#475569', isWin: false },
-    ],
-    quizQuestions: [
-      {
-        id: 'default-q1',
-        question: 'بهترین روش دریافت تخفیف از فروشگاه چیست؟',
-        options: ['شرکت در کمپین', 'ارسال پیام به ادمین', 'هر دو مورد بالا'],
-        correctOptionIndex: 2
-      }
     ]
   }
 ];

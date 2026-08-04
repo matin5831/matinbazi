@@ -519,18 +519,18 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
                 <SlotMachine prizes={campaign.prizes} onFinish={handleGameFinish} />
               )}
               {activeGame === 'QUIZ' && (
-                <QuizGame
-                  questions={campaign.quizQuestions && campaign.quizQuestions.length > 0 ? campaign.quizQuestions : [
-                    {
-                      id: 'default-q1',
-                      question: 'بهترین روش دریافت تخفیف از فروشگاه چیست؟',
-                      options: ['شرکت در کمپین', 'ارسال پیام به ادمین', 'هر دو مورد بالا'],
-                      correctOptionIndex: 2
-                    }
-                  ]}
-                  prizes={campaign.prizes}
-                  onFinish={handleGameFinish}
-                />
+                campaign.quizQuestions && campaign.quizQuestions.length > 0 ? (
+                  <QuizGame
+                    questions={campaign.quizQuestions}
+                    prizes={campaign.prizes}
+                    onFinish={handleGameFinish}
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-6 text-center">
+                    <p className="text-amber-300 font-bold mb-2">🎯 سوال کوییز هنوز تعریف نشده است</p>
+                    <p className="text-sm text-slate-300">مدیر فروشگاه باید ابتدا از بخش «ویرایش کمپین» یک سوال اضافه کند.</p>
+                  </div>
+                )
               )}
               {activeGame === 'MYSTERY_BOX' && (
                 <MysteryBox prizes={campaign.prizes} onFinish={handleGameFinish} />

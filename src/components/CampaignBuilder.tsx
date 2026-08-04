@@ -35,14 +35,8 @@ export const CampaignBuilder: React.FC<CampaignBuilderProps> = ({ initialCampaig
     { id: 'p-5', label: 'کد تخفیف ۲۰٪', subLabel: 'هدیه ورود', probability: 20, couponCode: 'WELCOME20', discountPercent: 20, color: '#10b981', isWin: true },
   ]);
 
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(initialCampaign?.quizQuestions || [
-    {
-      id: 'q-1',
-      question: 'کدام گزینه ویژگی اصلی محصولات ما می‌باشد؟',
-      options: ['کیفیت عالی و ارسال سریع', 'تضمین اصالت کالا', 'همه موارد بالا'],
-      correctOptionIndex: 2
-    }
-  ]);
+  // بخش سوالات کوییز — از ابتدا خالی؛ ادمین خودش سوال می‌نویسد
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(initialCampaign?.quizQuestions || []);
 
   const handleAddPrize = () => {
     const newP: Prize = {
