@@ -167,7 +167,7 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({ prizes, onFinish, disabl
                       className="select-none font-['Vazirmatn']"
                       style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.65))' }}
                     >
-                      {prize.label.length > 16 ? prize.label.slice(0, 14) + '…' : prize.label}
+                      {isWinner ? prize.label : '🎁'}
                     </text>
                   </g>
                 </g>
