@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.3.5';
+export const APP_VERSION = '1.3.6';
 
 export type GameType = 'WHEEL' | 'SCRATCH' | 'SLOT' | 'MYSTERY_BOX' | 'ALL';
 
@@ -12,6 +12,7 @@ export interface Prize {
   probability: number; // 0 - 100 %
   couponCode: string;
   discountPercent?: number;
+  discountType?: 'percent' | 'fixed_cart';
   color: string;
   isWin: boolean;
   remainingQuantity?: number;

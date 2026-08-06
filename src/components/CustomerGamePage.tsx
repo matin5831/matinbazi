@@ -235,7 +235,7 @@ export const CustomerGamePage: React.FC<CustomerGamePageProps> = ({ campaign, on
         const wooRes = await createWooCommerceCoupon(settings, {
           code: finalPrize.couponCode || '',
           amount: finalPrize.discountPercent || 10,
-          discountType: 'percent',
+          discountType: finalPrize.discountType || 'percent',
           description: `کد تخفیف کمپین ${campaign.title} برای کاربر ${instagramHandle || phoneNumber}`,
         });
         if (wooRes.success) {
